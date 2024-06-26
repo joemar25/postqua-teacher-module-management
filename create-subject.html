@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Subject</title>
+    <!-- Include your CSS and JS files here -->
+</head>
+
+<body>
+    <h1>Create Subject</h1>
+    <form id="createSubjectForm">
+        <input type="hidden" id="chapterId">
+        <label for="subjectTitle">Subject Title:</label>
+        <input type="text" id="subjectTitle" required>
+        <label for="subjectContent">Subject Content:</label>
+        <textarea id="subjectContent" required></textarea>
+        <button type="submit">Create Subject</button>
+    </form>
+
+    <script>
+        // Get the chapterId from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const chapterId = urlParams.get('chapterId');
+        document.getElementById('chapterId').value = chapterId;
+
+        // Add form submission logic here
+    </script>
+</body>
+
+</html>

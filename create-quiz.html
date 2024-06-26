@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Quiz</title>
+    <!-- Include your CSS and JS files here -->
+</head>
+
+<body>
+    <h1>Create Quiz</h1>
+    <form id="createQuizForm">
+        <input type="hidden" id="chapterId">
+        <label for="quizTitle">Quiz Title:</label>
+        <input type="text" id="quizTitle" required>
+        <label for="quizDescription">Quiz Description:</label>
+        <textarea id="quizDescription" required></textarea>
+        <!-- Add more fields for quiz questions here -->
+        <button type="submit">Create Quiz</button>
+    </form>
+
+    <script>
+        // Get the chapterId from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const chapterId = urlParams.get('chapterId');
+        document.getElementById('chapterId').value = chapterId;
+
+        // Add form submission logic here
+    </script>
+</body>
+
+</html>
