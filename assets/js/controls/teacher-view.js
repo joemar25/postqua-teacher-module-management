@@ -52,6 +52,9 @@ function switchTab(tabName) {
       tabElement.classList.add("border-blue-500", "text-blue-600");
       tabElement.classList.remove("border-transparent", "text-gray-500");
       sectionElement.classList.remove("hidden");
+      if (tab === "classwork") {
+        loadChapters(currentClassId);
+      }
     } else {
       tabElement.classList.remove("border-blue-500", "text-blue-600");
       tabElement.classList.add("border-transparent", "text-gray-500");
@@ -147,7 +150,7 @@ function createPostForm() {
     "bg-white dark:bg-gray-800 shadow sm:rounded-lg mb-6";
   formContainer.innerHTML = `
       <div class="px-4 py-5 sm:p-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200">
+        <h3 class="text-lg py-4 leading-6 font-medium text-gray-900 dark:text-gray-200">
           Create a post
         </h3>
         <form id="postForm" class="mt-5">
@@ -290,7 +293,7 @@ function displayPosts(posts) {
   const postsList = document.getElementById("postsList");
   if (postsList) {
     postsList.innerHTML =
-      "<h3 class='text-lg font-semibold mb-2'>General Posts</h3>";
+      "<h3 class='text-lg font-semibold mb-2 mt-8'>General Posts</h3>";
     if (generalPosts.length === 0) {
       postsList.innerHTML += "<p>No general posts available.</p>";
     } else {
@@ -315,37 +318,41 @@ function displayPosts(posts) {
 
 function createPostElement(post) {
   const postElement = document.createElement("div");
-  postElement.className = "bg-gray-100 p-3 rounded";
+  postElement.className = "bg-white dark:bg-gray-800 rounded-lg shadow p-6";
   postElement.innerHTML = `
-      <div class="flex justify-between items-center mb-2">
-        <span class="text-sm text-gray-600">${new Date(
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-sm text-gray-500 dark:text-gray-400">${new Date(
           post.created_at
         ).toLocaleString()}</span>
         <div>
           <button onclick="editPost(${
             post.id
-          })" class="text-blue-600 hover:text-blue-800 text-sm mr-2">
+          })" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm mr-2">
             Edit
           </button>
           <button onclick="deletePost(${
             post.id
-          })" class="text-red-600 hover:text-red-800 text-sm">
+          })" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm">
             Delete
           </button>
         </div>
       </div>
-      <p class="text-sm" id="post-content-${post.id}">${post.content}</p>
-      <div id="edit-form-${post.id}" class="hidden mt-2">
+      <p class="text-gray-800 dark:text-gray-200" id="post-content-${
+        post.id
+      }">${post.content}</p>
+      <div id="edit-form-${post.id}" class="hidden mt-4">
         <textarea id="edit-content-${
           post.id
-        }" class="w-full p-2 border rounded">${post.content}</textarea>
-        <div class="mt-2">
+        }" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">${
+    post.content
+  }</textarea>
+        <div class="mt-2 flex justify-end">
           <button onclick="updatePost(${
             post.id
-          })" class="bg-blue-500 text-white px-2 py-1 rounded mr-2">Save</button>
+          })" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-2">Save</button>
           <button onclick="cancelEdit(${
             post.id
-          })" class="bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+          })" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">Cancel</button>
         </div>
       </div>
     `;
@@ -437,9 +444,10 @@ async function deletePost(postId) {
 async function loadChapters(classId) {
   const chaptersSection = document.getElementById("classworkSection");
   chaptersSection.innerHTML =
-    "<h3 class='text-lg font-medium text-gray-900 dark:text-gray-200 mb-4'>Classwork</h3>";
+    "<h3 class='text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4'>Classwork</h3>";
 
   try {
+    // First, get the course_id for the current class
     const { data: classData, error: classError } = await supabase_connection
       .from("classes")
       .select("course_id")
@@ -448,47 +456,107 @@ async function loadChapters(classId) {
 
     if (classError) throw classError;
 
-    const { data: chapters, error: chaptersError } = await supabase_connection
-      .from("chapters")
-      .select("*")
-      .eq("course_id", classData.course_id)
-      .order("order");
+    // Fetch chapters, quizzes, and quiz results for the course
+    const { data: chaptersData, error: chaptersError } =
+      await supabase_connection
+        .from("chapters")
+        .select(
+          `
+          id,
+          title,
+          order,
+          quizzes (
+            id,
+            title,
+            quiz_results (
+              id,
+              student_id,
+              score,
+              tbl_student (
+                student_name
+              )
+            )
+          )
+        `
+        )
+        .eq("course_id", classData.course_id)
+        .order("order");
 
     if (chaptersError) throw chaptersError;
 
-    if (chapters.length === 0) {
+    if (chaptersData.length === 0) {
       chaptersSection.innerHTML +=
         "<p>No chapters available for this course.</p>";
       return;
     }
 
-    const chaptersList = document.createElement("ul");
-    chaptersList.className = "space-y-4";
+    // Get the total number of students in the class
+    const { count: totalStudents, error: studentsError } =
+      await supabase_connection
+        .from("class_students")
+        .select("id", { count: "exact" })
+        .eq("class_id", classId);
 
-    chapters.forEach((chapter) => {
-      const chapterItem = document.createElement("li");
-      chapterItem.className = "bg-white p-4 rounded shadow";
+    if (studentsError) throw studentsError;
+
+    const chaptersList = document.createElement("ul");
+    chaptersList.className = "space-y-6";
+
+    chaptersData.forEach((chapter) => {
+      const chapterItem = document.createElement("div");
+      chapterItem.className =
+        "bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6";
+
+      let quizzesHTML = "";
+      if (chapter.quizzes.length === 0) {
+        quizzesHTML =
+          '<p class="text-gray-600 dark:text-gray-400 mt-2">No quizzes available for this chapter.</p>';
+      } else {
+        quizzesHTML = '<ul class="mt-4 space-y-4">';
+        chapter.quizzes.forEach((quiz) => {
+          const studentsWithScores = quiz.quiz_results.length;
+          quizzesHTML += `
+              <li class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <div class="font-medium text-gray-800 dark:text-gray-200">${
+                  quiz.title
+                }</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">${studentsWithScores}/${totalStudents} students completed</div>
+                <ul class="mt-2 space-y-1">
+                  ${quiz.quiz_results
+                    .map(
+                      (result) => `
+                    <li class="text-sm text-gray-700 dark:text-gray-300">
+                      ${result.tbl_student.student_name}: ${result.score}
+                    </li>
+                  `
+                    )
+                    .join("")}
+                </ul>
+              </li>
+            `;
+        });
+        quizzesHTML += "</ul>";
+      }
+
       chapterItem.innerHTML = `
-        <h3 class="text-lg font-semibold">${chapter.title}</h3>
-        <p class="text-sm text-gray-600">${
-          chapter.description || "No description available."
-        }</p>
-      `;
-      chaptersList.appendChild(chapterItem);
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">${chapter.title}</h3>
+      ${quizzesHTML}
+    `;
+      chaptersSection.appendChild(chapterItem);
     });
 
     chaptersSection.appendChild(chaptersList);
   } catch (error) {
-    console.error("Error loading chapters:", error);
+    console.error("Error loading chapters and quizzes:", error);
     chaptersSection.innerHTML +=
-      "<p>Failed to load chapters. Please try again.</p>";
+      "<p>Failed to load chapters and quizzes. Please try again.</p>";
   }
 }
 
 async function loadStudents(classId) {
   const studentsSection = document.getElementById("peopleSection");
   studentsSection.innerHTML =
-    "<h3 class='text-lg font-medium text-gray-900 dark:text-gray-200 mb-4'>People</h3>";
+    "<h3 class='text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4'>People</h3>";
 
   try {
     const { data: students, error } = await supabase_connection
@@ -503,14 +571,19 @@ async function loadStudents(classId) {
       return;
     }
 
-    const studentList = document.createElement("ul");
-    studentList.className = "bg-white rounded shadow divide-y";
+    const studentList = document.createElement("div");
+    studentList.className =
+      "bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden";
 
     students.forEach((enrollment) => {
       const student = enrollment.tbl_student;
-      const listItem = document.createElement("li");
-      listItem.className = "p-4";
-      listItem.textContent = `${student.student_name} (${student.course} - ${student.Year})`;
+      const listItem = document.createElement("div");
+      listItem.className =
+        "p-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0";
+      listItem.innerHTML = `
+      <p class="text-gray-800 dark:text-gray-200">${student.student_name}</p>
+      <p class="text-sm text-gray-600 dark:text-gray-400">${student.course} - ${student.Year}</p>
+    `;
       studentList.appendChild(listItem);
     });
 
