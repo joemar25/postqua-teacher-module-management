@@ -34,7 +34,13 @@ function setupEventListeners() {
     });
   });
 
-  document.getElementById("postForm").addEventListener("submit", createPost);
+  // Use event delegation for the post form
+  document.addEventListener("submit", (event) => {
+    if (event.target.id === "postForm") {
+      event.preventDefault();
+      createPost(event);
+    }
+  });
 }
 
 function switchTab(tabName) {
@@ -73,10 +79,69 @@ async function loadClassData(classId) {
 }
 
 async function loadStream(classId) {
+  const streamSection = document.getElementById("streamSection");
+  if (!streamSection) {
+    console.error("Stream section not found in the DOM");
+    return;
+  }
+
+  // Clear the stream section
+  streamSection.innerHTML = "";
+
+  // Create post form
+  const postForm = createPostForm();
+  streamSection.appendChild(postForm);
+
+  // Create curriculum overview
+  const curriculumOverview = document.createElement("div");
+  curriculumOverview.id = "curriculumOverview";
+  streamSection.appendChild(curriculumOverview);
+
+  // Create posts list
+  const postsList = document.createElement("div");
+  postsList.id = "postsList";
+  postsList.className = "space-y-6";
+  streamSection.appendChild(postsList);
+
   await Promise.all([loadCurriculumOverview(classId), loadPosts(classId)]);
 }
 
+function createPostForm() {
+  const formContainer = document.createElement("div");
+  formContainer.className =
+    "bg-white dark:bg-gray-800 shadow sm:rounded-lg mb-6";
+  formContainer.innerHTML = `
+      <div class="px-4 py-5 sm:p-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200">
+          Create a post
+        </h3>
+        <form id="postForm" class="mt-5">
+          <textarea id="postContent" name="content" rows="3"
+            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+            placeholder="Share with your class..."></textarea>
+          <select id="postChapter"
+            class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+            <option value="">Select a chapter (optional)</option>
+          </select>
+          <div class="mt-3 flex justify-end">
+            <button type="submit"
+              class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              Post
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+  return formContainer;
+}
+
 async function loadCurriculumOverview(classId) {
+  const overviewContainer = document.getElementById("curriculumOverview");
+  if (!overviewContainer) {
+    console.error("Curriculum overview container not found");
+    return;
+  }
+
   try {
     const { data: classData, error: classError } = await supabase_connection
       .from("classes")
@@ -94,7 +159,6 @@ async function loadCurriculumOverview(classId) {
 
     if (chaptersError) throw chaptersError;
 
-    const overviewContainer = document.getElementById("curriculumOverview");
     overviewContainer.innerHTML =
       '<h2 class="text-xl font-bold mb-4">Course Curriculum</h2>';
 
@@ -105,11 +169,18 @@ async function loadCurriculumOverview(classId) {
     }
 
     const chapterList = document.createElement("ul");
-    chapterList.className = "list-disc pl-5";
+    chapterList.className = "space-y-4";
 
     chapters.forEach((chapter) => {
       const chapterItem = document.createElement("li");
-      chapterItem.textContent = chapter.title;
+      chapterItem.className = "bg-white p-4 rounded shadow";
+      chapterItem.innerHTML = `
+          <h3 class="text-lg font-semibold">${chapter.title}</h3>
+          <p class="text-sm text-gray-600 mb-2">${
+            chapter.description || "No description available."
+          }</p>
+          <div id="chapter-${chapter.id}-posts" class="mt-2 space-y-2"></div>
+        `;
       chapterList.appendChild(chapterItem);
     });
 
@@ -117,16 +188,22 @@ async function loadCurriculumOverview(classId) {
 
     // Populate the chapter select for posts
     const postChapterSelect = document.getElementById("postChapter");
-    postChapterSelect.innerHTML = "<option value=''>Select a chapter</option>";
-    chapters.forEach((chapter) => {
-      const option = document.createElement("option");
-      option.value = chapter.id;
-      option.textContent = chapter.title;
-      postChapterSelect.appendChild(option);
-    });
+    if (postChapterSelect) {
+      postChapterSelect.innerHTML =
+        "<option value=''>Select a chapter</option>";
+      chapters.forEach((chapter) => {
+        const option = document.createElement("option");
+        option.value = chapter.id;
+        option.textContent = chapter.title;
+        postChapterSelect.appendChild(option);
+      });
+    }
+
+    // Load posts for each chapter
+    await loadPosts(classId);
   } catch (error) {
     console.error("Error loading curriculum overview:", error);
-    document.getElementById("curriculumOverview").innerHTML =
+    overviewContainer.innerHTML =
       "<p>Failed to load curriculum overview. Please try again.</p>";
   }
 }
@@ -144,43 +221,57 @@ async function loadPosts(classId) {
     displayPosts(posts);
   } catch (error) {
     console.error("Error loading posts:", error);
-    document.getElementById("postsList").innerHTML =
-      "<p>Failed to load posts. Please try again.</p>";
   }
 }
 
 function displayPosts(posts) {
-  const postsList = document.getElementById("postsList");
-  postsList.innerHTML = "";
+  const generalPosts = posts.filter((post) => !post.chapter_id);
+  const chapterPosts = posts.filter((post) => post.chapter_id);
 
-  posts.forEach((post) => {
-    const postElement = document.createElement("div");
-    postElement.className =
-      "bg-white dark:bg-gray-800 shadow sm:rounded-lg mb-4";
-    postElement.innerHTML = `
-      <div class="px-4 py-5 sm:p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200">
-            ${new Date(post.created_at).toLocaleString()}
-          </h3>
-          <button onclick="deletePost(${
-            post.id
-          })" class="text-red-600 hover:text-red-800">
-            Delete
-          </button>
-        </div>
-        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">${
-          post.content
-        }</p>
-        ${
-          post.chapter_id
-            ? `<p class="mt-2 text-xs text-gray-400">Chapter ID: ${post.chapter_id}</p>`
-            : ""
-        }
-      </div>
-    `;
-    postsList.appendChild(postElement);
+  // Display general posts
+  const postsList = document.getElementById("postsList");
+  if (postsList) {
+    postsList.innerHTML =
+      "<h3 class='text-lg font-semibold mb-2'>General Posts</h3>";
+    if (generalPosts.length === 0) {
+      postsList.innerHTML += "<p>No general posts available.</p>";
+    } else {
+      generalPosts.forEach((post) => {
+        const postElement = createPostElement(post);
+        postsList.appendChild(postElement);
+      });
+    }
+  }
+
+  // Display chapter-specific posts
+  chapterPosts.forEach((post) => {
+    const chapterPostsContainer = document.getElementById(
+      `chapter-${post.chapter_id}-posts`
+    );
+    if (chapterPostsContainer) {
+      const postElement = createPostElement(post);
+      chapterPostsContainer.appendChild(postElement);
+    }
   });
+}
+
+function createPostElement(post) {
+  const postElement = document.createElement("div");
+  postElement.className = "bg-gray-100 p-3 rounded";
+  postElement.innerHTML = `
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-sm text-gray-600">${new Date(
+          post.created_at
+        ).toLocaleString()}</span>
+        <button onclick="deletePost(${
+          post.id
+        })" class="text-red-600 hover:text-red-800 text-sm">
+          Delete
+        </button>
+      </div>
+      <p class="text-sm">${post.content}</p>
+    `;
+  return postElement;
 }
 
 async function createPost(event) {
@@ -201,7 +292,7 @@ async function createPost(event) {
 
     document.getElementById("postContent").value = "";
     document.getElementById("postChapter").value = "";
-    await loadPosts(currentClassId);
+    await loadCurriculumOverview(currentClassId); // Reload the entire curriculum and posts
   } catch (error) {
     console.error("Error creating post:", error);
   }
@@ -218,7 +309,7 @@ async function deletePost(postId) {
 
     if (error) throw error;
 
-    await loadPosts(currentClassId);
+    await loadCurriculumOverview(currentClassId);
   } catch (error) {
     console.error("Error deleting post:", error);
   }
