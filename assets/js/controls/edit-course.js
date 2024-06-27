@@ -83,7 +83,7 @@ function displayCurriculum(chapters) {
     chapterElement.className = "mt-4 p-4 bg-white rounded shadow";
     chapterElement.innerHTML = `
       <div class="flex items-center justify-between">
-        <h3 class="font-semibold">${chapter.title}</h3>
+        <h3 class="font-semibold">${chapter.title} (Order: ${chapter.order})</h3>
         <div>
           <button class="expand-chapter px-2 py-1 text-sm text-blue-600" data-chapter-id="${chapter.id}">+</button>
           <button class="delete-chapter px-2 py-1 text-sm text-red-600" data-chapter-id="${chapter.id}">Delete</button>
@@ -168,14 +168,20 @@ function showAddChapterForm() {
 
   form.innerHTML = `
     <input type="hidden" id="chapterCourseId" value="${currentCourseId}">
-    <label class="block mt-4 text-sm">
-      <span class="text-gray-700 dark:text-gray-400">Chapter Title</span>
-      <input id="chapterTitle" class="form-input mt-1 block w-full" placeholder="Enter Chapter Title">
-    </label>
-    <label class="block mt-4 text-sm">
-      <span class="text-gray-700 dark:text-gray-400">Chapter Order</span>
-      <input id="chapterOrder" type="number" class="form-input mt-1 block w-full" placeholder="Enter Chapter Order">
-    </label>
+    <div class="flex space-x-4">
+      <div class="flex-grow">
+        <label class="block mt-4 text-sm">
+          <span class="text-gray-700 dark:text-gray-400">Chapter Title</span>
+          <input id="chapterTitle" class="form-input mt-1 block w-full" placeholder="Enter Chapter Title">
+        </label>
+      </div>
+      <div class="w-1/4">
+        <label class="block mt-4 text-sm">
+          <span class="text-gray-700 dark:text-gray-400">Chapter Order</span>
+          <input id="chapterOrder" type="number" class="form-input mt-1 block w-full" placeholder="Order">
+        </label>
+      </div>
+    </div>
     <button type="button" id="submitChapter" class="mt-4 px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
       Add Chapter
     </button>
@@ -208,7 +214,8 @@ async function addChapter() {
   } else {
     showNotification("Chapter added successfully", false);
     fetchChaptersLessonsAndQuizzes(currentCourseId);
-    document.getElementById("addChapterForm").innerHTML = "";
+    document.getElementById("chapterTitle").value = "";
+    document.getElementById("chapterOrder").value = "";
   }
 }
 
