@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="./assets/css/tailwind.output.css" />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/controls/dashboard.js"></script>
+  <script src="assets/js/controls/class.js"></script>
 
   <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
   <script src="./assets/js/init-alpine.js"></script>
@@ -21,7 +21,7 @@
     <aside class="z-20 hidden w-64 overflow-y-auto bg-white dark:bg-gray-800 md:block flex-shrink-0">
       <div class="py-4 text-gray-500 dark:text-gray-400">
         <a class="ml-6 text-lg font-bold text-gray-800 dark:text-gray-200" href="#">
-          LMS
+          Course Management
         </a>
         <ul class="mt-6">
           <li class="relative px-6 py-3">
@@ -80,7 +80,7 @@
       @keydown.escape="closeSideMenu">
       <div class="py-4 text-gray-500 dark:text-gray-400">
         <a class="ml-6 text-lg font-bold text-gray-800 dark:text-gray-200" href="#">
-          LMS
+          Course Management
         </a>
         <ul class="mt-6">
           <li class="relative px-6 py-3">
@@ -285,10 +285,115 @@
             Classes
           </h2>
 
+          <!-- Classes List -->
+          <div class="w-full overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+              <table class="w-full whitespace-no-wrap">
+                <thead>
+                  <tr
+                    class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                    <th class="px-4 py-3">Class Name</th>
+                    <th class="px-4 py-3">Course</th>
+                    <th class="px-4 py-3">Start Date</th>
+                    <th class="px-4 py-3">End Date</th>
+                    <th class="px-4 py-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="classesTableBody" class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                  <!-- Class rows will be inserted here by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Add Class Button -->
+          <div class="mt-6">
+            <button id="addClassBtn"
+              class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+              Add Class
+            </button>
+          </div>
+
+          <!-- Class Modal -->
+          <div id="classModal"
+            class="fixed inset-0 z-30 hidden items-center justify-center overflow-auto bg-black bg-opacity-50">
+            <div class="relative px-6 py-4 w-full max-w-md mx-auto bg-white rounded-lg shadow-lg dark:bg-gray-800">
+              <h2 id="modalTitle" class="text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Add Class</h2>
+              <form id="classForm">
+                <input type="hidden" id="classId">
+                <div class="mb-4">
+                  <label for="className" class="block text-sm font-medium text-gray-700 dark:text-gray-400">Class
+                    Name</label>
+                  <input type="text" id="className"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-400 focus:ring focus:ring-purple-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                    required>
+                </div>
+                <div class="mb-4">
+                  <label for="courseName"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-400">Course</label>
+                  <select id="courseName"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-400 focus:ring focus:ring-purple-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                    required>
+                    <!-- Course options will be populated by JavaScript -->
+                  </select>
+                </div>
+                <div class="mb-4">
+                  <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-400">Start
+                    Date</label>
+                  <input type="date" id="startDate"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-400 focus:ring focus:ring-purple-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                    required>
+                </div>
+                <div class="mb-4">
+                  <label for="endDate" class="block text-sm font-medium text-gray-700 dark:text-gray-400">End
+                    Date</label>
+                  <input type="date" id="endDate"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-400 focus:ring focus:ring-purple-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                    required>
+                </div>
+                <div class="flex justify-end mt-6">
+                  <button type="button" id="cancelBtn"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                    Cancel
+                  </button>
+                  <button type="submit"
+                    class="ml-3 px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Student List Modal -->
+          <div id="studentListModal"
+            class="fixed inset-0 z-30 hidden items-center justify-center overflow-auto bg-black bg-opacity-50">
+            <div class="relative px-6 py-4 w-full max-w-2xl mx-auto bg-white rounded-lg shadow-lg dark:bg-gray-800">
+              <h2 id="studentListTitle" class="text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Students in
+                Class</h2>
+              <div id="enrolledStudentsList" class="mb-4">
+                <!-- Enrolled students will be listed here -->
+              </div>
+              <div class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">Available Students</h3>
+                <div id="studentList" class="max-h-60 overflow-y-auto">
+                  <!-- Available students will be listed here -->
+                </div>
+              </div>
+              <button id="enrollSelectedStudentsBtn"
+                class="mt-4 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                Enroll Selected Students
+              </button>
+              <button id="closeStudentListBtn"
+                class="mt-4 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                Close
+              </button>
+            </div>
+          </div>
+
+
         </div>
-      </main>
     </div>
-  </div>
 </body>
 
 </html>

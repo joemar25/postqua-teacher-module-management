@@ -1,3 +1,5 @@
+// assets/js/controls/edit-course.js
+
 const SUPABASE_URL = "https://hvqvmxakmursjidtfmdj.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2cXZteGFrbXVyc2ppZHRmbWRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg2MDA4MjQsImV4cCI6MjAzNDE3NjgyNH0.dykJM61G-58LEnAyCUU6-irano2f4vraV8t1l8C5KZ8";
@@ -90,13 +92,13 @@ function displayCurriculum(chapters) {
         </div>
       </div>
       <div class="chapter-content hidden mt-2" id="chapter-content-${chapter.id}">
-        <h4 class="font-medium mt-2">Lessons</h4>
-        <ul class="lessons-list ml-4"></ul>
-        <button class="create-subject mt-2 px-2 py-1 text-sm text-green-600" data-chapter-id="${chapter.id}">Create Subject</button>
+        <h4 class="font-medium mt-2">Subjects</h4>
+        <ul class="subjects-list ml-4"></ul>
+        <button class="view-subjects mt-2 px-2 py-1 text-sm text-green-600" data-chapter-id="${chapter.id}">View Subjects</button>
         
         <h4 class="font-medium mt-4">Quizzes</h4>
         <ul class="quizzes-list ml-4"></ul>
-        <button class="create-quiz mt-2 px-2 py-1 text-sm text-green-600" data-chapter-id="${chapter.id}">Create Quiz</button>
+        <button class="view-quizzes mt-2 px-2 py-1 text-sm text-green-600" data-chapter-id="${chapter.id}">View Quizzes</button>
       </div>
     `;
     curriculumList.appendChild(chapterElement);
@@ -133,6 +135,20 @@ function addEventListeners() {
     button.addEventListener("click", (e) => {
       const chapterId = e.target.dataset.chapterId;
       window.location.href = `create-quiz.html?chapterId=${chapterId}`;
+    });
+  });
+
+  document.querySelectorAll(".view-subjects").forEach((button) => {
+    button.addEventListener("click", (e) => {
+      const chapterId = e.target.dataset.chapterId;
+      window.location.href = `subjects.html?chapterId=${chapterId}`;
+    });
+  });
+
+  document.querySelectorAll(".view-quizzes").forEach((button) => {
+    button.addEventListener("click", (e) => {
+      const chapterId = e.target.dataset.chapterId;
+      window.location.href = `quizzes.html?chapterId=${chapterId}`;
     });
   });
 }

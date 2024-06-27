@@ -4,26 +4,20 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Course</title>
+    <title>Quizzes - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="./assets/css/tailwind.output.css" />
-    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
-    <script src="./assets/js/init-alpine.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/controls/edit-course.js" defer></script>
+    <script src="assets/js/controls/quizzes.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
+    <script src="./assets/js/init-alpine.js"></script>
 </head>
 
 <body>
-    <div id="notification"
-        class="fixed top-0 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-300 opacity-0 z-50">
-        Please fill in all fields
-    </div>
-
-    <div class="flex h-screen bg-gray-50 dark:bg-gray-900" :class="{ 'overflow-hidden': isSideMenuOpen }">
+    <div class="flex h-screen bg-gray-50 dark:bg-gray-900" :class="{ 'overflow-hidden': isSideMenuOpen}">
         <!-- Desktop sidebar -->
         <aside class="z-20 flex-shrink-0 hidden w-64 overflow-y-auto bg-white dark:bg-gray-800 md:block">
             <div class="py-4 text-gray-500 dark:text-gray-400">
@@ -302,55 +296,95 @@
                     </ul>
                 </div>
             </header>
-            <!-- Classes -->
-            <main class="h-full overflow-y-auto">
-                <div class="container px-6 mx-auto grid">
-                    <div class="shadow-md rounded-lg p-6" x-data="{ openTab: 1 }">
-                        <div class="border-b-2 mb-2">
-                            <nav class="flex mb-5">
-                                <button @click="openTab = 1" :class="{ 'text-blue-500 border-blue-500': openTab === 1 }"
-                                    class="focus:outline-none border-b-2 p-4 text-gray-600 hover:text-blue-500">Course
-                                    Details</button>
-                                <button @click="openTab = 2" :class="{ 'text-blue-500 border-blue-500': openTab === 2 }"
-                                    class="focus:outline-none border-b-2 p-4 text-gray-600 hover:text-blue-500">Curriculum</button>
-                            </nav>
-                        </div>
+            <main class="h-full pb-16 overflow-y-auto">
+                <div class="container grid px-6 mx-auto">
+                    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+                        Quizzes
+                    </h2>
 
-                        <div x-show="openTab === 1">
-                            <form id="courseDetailsForm">
-                                <label class="block mt-4 text-sm">
-                                    <span class="text-gray-700 dark:text-gray-400">Course Name</span>
-                                    <input id="courseTitle" class="form-input mt-1 block w-full"
-                                        placeholder="Enter Course Name">
-                                </label>
-                                <label class="block mt-4 text-sm">
-                                    <span class="text-gray-700 dark:text-gray-400">Description</span>
-                                    <textarea id="courseDescription" class="form-textarea mt-1 block w-full" rows="3"
-                                        placeholder="Enter course description."></textarea>
-                                </label>
-                                <label class="block mt-4 text-sm">
-                                    <span class="text-gray-700 dark:text-gray-400">Category</span>
-                                    <input id="courseCategory" class="form-input mt-1 block w-full"
-                                        placeholder="Enter Course Category">
-                                </label>
-                                <button type="submit"
-                                    class="mt-4 px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
-                                    Update Course
-                                </button>
-                            </form>
-                        </div>
 
-                        <div x-show="openTab === 2">
-                            <div id="curriculumList"></div>
-                            <form id="addChapterForm" class="mt-4">
-                                <button id="addChapterButton"
-                                    class="mt-4 px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
-                                    Add Chapter
+
+
+
+
+                    <!-- Quizzes List -->
+                    <div class="w-full overflow-hidden rounded-lg shadow-xs">
+                        <div class="w-full overflow-x-auto">
+                            <table class="w-full whitespace-no-wrap">
+                                <thead>
+                                    <tr
+                                        class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                                        <th class="px-4 py-3">Title</th>
+                                        <th class="px-4 py-3">Description</th>
+                                        <th class="px-4 py-3">Questions</th>
+                                        <th class="px-4 py-3">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="quizzesTableBody"
+                                    class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                                    <!-- Quiz rows will be inserted here by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Add Quiz Button -->
+                    <div class="mt-6">
+                        <button id="addQuizBtn"
+                            class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+                            Add Quiz
+                        </button>
+                    </div>
+
+                    <!-- Quiz Modal -->
+                    <div id="quizModal"
+                        class="fixed inset-0 z-30 hidden items-center justify-center overflow-auto bg-black bg-opacity-50">
+                        <div
+                            class="relative px-6 py-4 w-full max-w-md mx-auto bg-white rounded-lg shadow-lg dark:bg-gray-800">
+                            <h2 id="modalTitle" class="text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Add
+                                Quiz</h2>
+                            <form id="quizForm">
+                                <input type="hidden" id="quizId">
+                                <div class="mb-4">
+                                    <label for="quizTitle"
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-400">Title</label>
+                                    <input type="text" id="quizTitle"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-400 focus:ring focus:ring-purple-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                        required>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="quizDescription"
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-400">Description</label>
+                                    <textarea id="quizDescription" rows="3"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-400 focus:ring focus:ring-purple-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                        required></textarea>
+                                </div>
+                                <div id="questionsContainer">
+                                    <!-- Questions will be added here dynamically -->
+                                </div>
+                                <button type="button" id="addQuestionBtn"
+                                    class="mt-2 px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-green-600 border border-transparent rounded-lg active:bg-green-600 hover:bg-green-700 focus:outline-none focus:shadow-outline-green">
+                                    Add Question
                                 </button>
+                                <div class="flex justify-end mt-6">
+                                    <button type="button" id="cancelBtn"
+                                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                                        Cancel
+                                    </button>
+                                    <button type="submit"
+                                        class="ml-3 px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                        Save
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
-                </div>
+
+
+
+
+
+
             </main>
         </div>
     </div>
