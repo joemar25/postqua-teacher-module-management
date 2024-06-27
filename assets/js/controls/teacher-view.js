@@ -103,7 +103,42 @@ async function loadStream(classId) {
   postsList.className = "space-y-6";
   streamSection.appendChild(postsList);
 
-  await Promise.all([loadCurriculumOverview(classId), loadPosts(classId)]);
+  await Promise.all([
+    loadCurriculumOverview(classId),
+    loadPosts(classId),
+    loadExistingPosts(),
+  ]);
+}
+
+async function loadExistingPosts() {
+  try {
+    const { data: posts, error } = await supabase_connection
+      .from("tbl_feeds")
+      .select("id, content, class_id, chapter_id, classes(class_name)")
+      .neq("class_id", currentClassId) // Exclude posts from the current class
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    const existingPostsSelect = document.getElementById("existingPosts");
+    existingPostsSelect.innerHTML =
+      '<option value="">Reuse a post from another class</option>';
+
+    posts.forEach((post) => {
+      const option = document.createElement("option");
+      option.value = post.id;
+      const postPreview =
+        post.content.length > 50
+          ? `${post.content.substring(0, 50)}...`
+          : post.content;
+      option.textContent = `${post.classes.class_name}${
+        post.chapter_id ? ` (Chapter ${post.chapter_id})` : ""
+      }: ${postPreview}`;
+      existingPostsSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error loading existing posts:", error);
+  }
 }
 
 function createPostForm() {
@@ -122,6 +157,10 @@ function createPostForm() {
           <select id="postChapter"
             class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
             <option value="">Select a chapter (optional)</option>
+          </select>
+          <select id="existingPosts"
+            class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+            <option value="">Reuse an existing post</option>
           </select>
           <div class="mt-3 flex justify-end">
             <button type="submit"
@@ -224,6 +263,25 @@ async function loadPosts(classId) {
   }
 }
 
+async function updatePost(postId) {
+  const newContent = document.getElementById(`edit-content-${postId}`).value;
+
+  if (!newContent.trim()) return;
+
+  try {
+    const { error } = await supabase_connection
+      .from("tbl_feeds")
+      .update({ content: newContent })
+      .eq("id", postId);
+
+    if (error) throw error;
+
+    await loadCurriculumOverview(currentClassId);
+  } catch (error) {
+    console.error("Error updating post:", error);
+  }
+}
+
 function displayPosts(posts) {
   const generalPosts = posts.filter((post) => !post.chapter_id);
   const chapterPosts = posts.filter((post) => post.chapter_id);
@@ -263,36 +321,97 @@ function createPostElement(post) {
         <span class="text-sm text-gray-600">${new Date(
           post.created_at
         ).toLocaleString()}</span>
-        <button onclick="deletePost(${
-          post.id
-        })" class="text-red-600 hover:text-red-800 text-sm">
-          Delete
-        </button>
+        <div>
+          <button onclick="editPost(${
+            post.id
+          })" class="text-blue-600 hover:text-blue-800 text-sm mr-2">
+            Edit
+          </button>
+          <button onclick="deletePost(${
+            post.id
+          })" class="text-red-600 hover:text-red-800 text-sm">
+            Delete
+          </button>
+        </div>
       </div>
-      <p class="text-sm">${post.content}</p>
+      <p class="text-sm" id="post-content-${post.id}">${post.content}</p>
+      <div id="edit-form-${post.id}" class="hidden mt-2">
+        <textarea id="edit-content-${
+          post.id
+        }" class="w-full p-2 border rounded">${post.content}</textarea>
+        <div class="mt-2">
+          <button onclick="updatePost(${
+            post.id
+          })" class="bg-blue-500 text-white px-2 py-1 rounded mr-2">Save</button>
+          <button onclick="cancelEdit(${
+            post.id
+          })" class="bg-gray-500 text-white px-2 py-1 rounded">Cancel</button>
+        </div>
+      </div>
     `;
   return postElement;
+}
+
+function editPost(postId) {
+  const contentElement = document.getElementById(`post-content-${postId}`);
+  const editFormElement = document.getElementById(`edit-form-${postId}`);
+
+  contentElement.classList.add("hidden");
+  editFormElement.classList.remove("hidden");
+}
+
+function cancelEdit(postId) {
+  const contentElement = document.getElementById(`post-content-${postId}`);
+  const editFormElement = document.getElementById(`edit-form-${postId}`);
+
+  contentElement.classList.remove("hidden");
+  editFormElement.classList.add("hidden");
 }
 
 async function createPost(event) {
   event.preventDefault();
   const content = document.getElementById("postContent").value;
   const chapterId = document.getElementById("postChapter").value;
+  const existingPostId = document.getElementById("existingPosts").value;
 
-  if (!content.trim()) return;
+  if (!content.trim() && !existingPostId) return;
 
   try {
+    let postData;
+
+    if (existingPostId) {
+      const { data: existingPost, error: fetchError } =
+        await supabase_connection
+          .from("tbl_feeds")
+          .select("content, chapter_id")
+          .eq("id", existingPostId)
+          .single();
+
+      if (fetchError) throw fetchError;
+
+      postData = {
+        class_id: currentClassId,
+        content: existingPost.content,
+        chapter_id: chapterId || existingPost.chapter_id,
+      };
+    } else {
+      postData = {
+        class_id: currentClassId,
+        content: content,
+        chapter_id: chapterId || null,
+      };
+    }
+
     const { error } = await supabase_connection
       .from("tbl_feeds")
-      .insert([
-        { class_id: currentClassId, content, chapter_id: chapterId || null },
-      ]);
+      .insert([postData]);
 
     if (error) throw error;
 
     document.getElementById("postContent").value = "";
     document.getElementById("postChapter").value = "";
-    await loadCurriculumOverview(currentClassId); // Reload the entire curriculum and posts
+    document.getElementById("existingPosts").value = "";
+    await loadCurriculumOverview(currentClassId);
   } catch (error) {
     console.error("Error creating post:", error);
   }
