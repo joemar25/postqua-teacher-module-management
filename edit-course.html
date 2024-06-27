@@ -351,68 +351,54 @@
                     </ul>
                 </div>
             </header>
+            <!-- Classes -->
             <main class="h-full overflow-y-auto">
                 <div class="container px-6 mx-auto grid">
-                    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
-                        Edit Course
-                    </h2>
-
-                    <!-- Classes -->
-                    <main class="h-full overflow-y-auto">
-                        <div class="container px-6 mx-auto grid">
-                            <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
-                                Edit Course
-                            </h2>
-
-                            <div class="shadow-md rounded-lg p-6" x-data="{ openTab: 1 }">
-                                <div class="border-b-2 mb-2">
-                                    <nav class="flex mb-5">
-                                        <button @click="openTab = 1"
-                                            :class="{ 'text-blue-500 border-blue-500': openTab === 1 }"
-                                            class="focus:outline-none border-b-2 p-4 text-gray-600 hover:text-blue-500">Course
-                                            Details</button>
-                                        <button @click="openTab = 2"
-                                            :class="{ 'text-blue-500 border-blue-500': openTab === 2 }"
-                                            class="focus:outline-none border-b-2 p-4 text-gray-600 hover:text-blue-500">Curriculum</button>
-                                    </nav>
-                                </div>
-
-                                <div x-show="openTab === 1">
-                                    <form id="courseDetailsForm">
-                                        <label class="block mt-4 text-sm">
-                                            <span class="text-gray-700 dark:text-gray-400">Course Name</span>
-                                            <input id="courseTitle" class="form-input mt-1 block w-full"
-                                                placeholder="Enter Course Name">
-                                        </label>
-                                        <label class="block mt-4 text-sm">
-                                            <span class="text-gray-700 dark:text-gray-400">Description</span>
-                                            <textarea id="courseDescription" class="form-textarea mt-1 block w-full"
-                                                rows="3" placeholder="Enter course description."></textarea>
-                                        </label>
-                                        <label class="block mt-4 text-sm">
-                                            <span class="text-gray-700 dark:text-gray-400">Category</span>
-                                            <input id="courseCategory" class="form-input mt-1 block w-full"
-                                                placeholder="Enter Course Category">
-                                        </label>
-                                        <button type="submit"
-                                            class="mt-4 px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
-                                            Update Course
-                                        </button>
-                                    </form>
-                                </div>
-
-                                <div x-show="openTab === 2">
-                                    <div id="curriculumList"></div>
-                                    <form id="addChapterForm" class="mt-4">
-                                        <button id="addChapterButton"
-                                            class="mt-4 px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
-                                            Add Chapter
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+                    <div class="shadow-md rounded-lg p-6" x-data="{ openTab: 1 }">
+                        <div class="border-b-2 mb-2">
+                            <nav class="flex mb-5">
+                                <button @click="openTab = 1" :class="{ 'text-blue-500 border-blue-500': openTab === 1 }"
+                                    class="focus:outline-none border-b-2 p-4 text-gray-600 hover:text-blue-500">Course
+                                    Details</button>
+                                <button @click="openTab = 2" :class="{ 'text-blue-500 border-blue-500': openTab === 2 }"
+                                    class="focus:outline-none border-b-2 p-4 text-gray-600 hover:text-blue-500">Curriculum</button>
+                            </nav>
                         </div>
-                    </main>
+
+                        <div x-show="openTab === 1">
+                            <form id="courseDetailsForm">
+                                <label class="block mt-4 text-sm">
+                                    <span class="text-gray-700 dark:text-gray-400">Course Name</span>
+                                    <input id="courseTitle" class="form-input mt-1 block w-full"
+                                        placeholder="Enter Course Name">
+                                </label>
+                                <label class="block mt-4 text-sm">
+                                    <span class="text-gray-700 dark:text-gray-400">Description</span>
+                                    <textarea id="courseDescription" class="form-textarea mt-1 block w-full" rows="3"
+                                        placeholder="Enter course description."></textarea>
+                                </label>
+                                <label class="block mt-4 text-sm">
+                                    <span class="text-gray-700 dark:text-gray-400">Category</span>
+                                    <input id="courseCategory" class="form-input mt-1 block w-full"
+                                        placeholder="Enter Course Category">
+                                </label>
+                                <button type="submit"
+                                    class="mt-4 px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+                                    Update Course
+                                </button>
+                            </form>
+                        </div>
+
+                        <div x-show="openTab === 2">
+                            <div id="curriculumList"></div>
+                            <form id="addChapterForm" class="mt-4">
+                                <button id="addChapterButton"
+                                    class="mt-4 px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+                                    Add Chapter
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
