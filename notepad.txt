@@ -1,0 +1,1120 @@
+1. Users
+   - user_id (PK)
+   - username
+   - email (unique)
+   - first_name
+   - last_name
+   - middle_name
+   - prefix
+   - display_name
+   - profile_picture_url
+   - bio
+   - date_of_birth
+   - gender
+   - language_preference
+   - timezone
+   - status (active, inactive, suspended)
+   - created_at
+   - updated_at
+   - last_login_at
+
+2. Roles
+   - role_id (PK)
+   - role_name
+   - description
+
+3. UserRoles
+   - user_role_id (PK)
+   - user_id (FK to Users)
+   - role_id (FK to Roles)
+   - assigned_at
+
+4. Permissions
+   - permission_id (PK)
+   - name
+   - description
+
+5. RolePermissions
+   - role_permission_id (PK)
+   - role_id (FK to Roles)
+   - permission_id (FK to Permissions)
+
+6. Institutions
+   - institution_id (PK)
+   - name
+   - type (school, university, organization)
+   - address
+   - website
+   - created_at
+   - active_theme_id (FK to ThemeSettings)
+
+7. Departments
+   - department_id (PK)
+   - institution_id (FK to Institutions)
+   - name
+   - description
+
+8. AcademicTerms
+   - term_id (PK)
+   - institution_id (FK to Institutions)
+   - name
+   - start_date
+   - end_date
+   - is_current
+
+9. Courses
+   - course_id (PK)
+   - creator_id (FK to Users)
+   - department_id (FK to Departments)
+   - title
+   - description
+   - code
+   - created_at
+   - updated_at
+   - status (draft, active, archived)
+
+10. Classes
+    - class_id (PK)
+    - course_id (FK to Courses)
+    - term_id (FK to AcademicTerms)
+    - teacher_id (FK to Users)
+    - name
+    - section
+    - start_date
+    - end_date
+    - status (active, completed, archived)
+    - syllabus_content
+    - syllabus_last_updated
+
+11. ClassEnrollments
+    - enrollment_id (PK)
+    - class_id (FK to Classes)
+    - user_id (FK to Users)
+    - role (student, teaching_assistant)
+    - status (active, completed, dropped)
+    - enrolled_at
+    - completed_at
+
+12. ClassArchives
+    - archive_id (PK)
+    - class_id (FK to Classes)
+    - archived_at
+    - archive_expiry_date
+
+13. UserClassAccess
+    - access_id (PK)
+    - user_id (FK to Users)
+    - class_id (FK to Classes)
+    - access_type (active, read-only)
+    - access_expiry_date
+
+14. Modules
+    - module_id (PK)
+    - course_id (FK to Courses)
+    - title
+    - description
+    - order
+    - is_visible
+    - availability_start
+    - availability_end
+
+15. ContentItems
+    - item_id (PK)
+    - module_id (FK to Modules)
+    - title
+    - type (lesson, activity, resource)
+    - content
+    - order
+    - is_visible
+    - availability_start
+    - availability_end
+
+16. Activities
+    - activity_id (PK)
+    - class_id (FK to Classes)
+    - content_item_id (FK to ContentItems)
+    - title
+    - description
+    - type (assignment, quiz, discussion, material)
+    - due_date
+    - points
+    - is_group_activity
+    - created_by (FK to Users)
+    - created_at
+    - updated_at
+    - is_visible
+    - availability_start
+    - availability_end
+
+17. ActivityMaterials
+    - material_id (PK)
+    - activity_id (FK to Activities)
+    - title
+    - description
+    - file_url
+    - content_type (document, video, link, etc.)
+
+18. ActivitySubmissions
+    - submission_id (PK)
+    - activity_id (FK to Activities)
+    - user_id (FK to Users)
+    - group_id (FK to ActivityGroups, nullable)
+    - content
+    - file_url
+    - submitted_at
+    - is_late
+    - grade
+    - feedback
+    - graded_by (FK to Users)
+    - graded_at
+
+19. ActivityGroups
+    - group_id (PK)
+    - activity_id (FK to Activities)
+    - name
+
+20. ActivityGroupMembers
+    - member_id (PK)
+    - group_id (FK to ActivityGroups)
+    - user_id (FK to Users)
+    - role (leader, member)
+
+21. Quizzes
+    - quiz_id (PK)
+    - activity_id (FK to Activities)
+    - time_limit
+    - attempts_allowed
+    - shuffle_questions
+    - is_visible
+    - availability_start
+    - availability_end
+
+22. QuizQuestions
+    - question_id (PK)
+    - quiz_id (FK to Quizzes)
+    - question_text
+    - question_type (multiple_choice, true_false, short_answer, etc.)
+    - points
+
+23. QuizAnswers
+    - answer_id (PK)
+    - question_id (FK to QuizQuestions)
+    - answer_text
+    - is_correct
+
+24. QuizAttempts
+    - attempt_id (PK)
+    - quiz_id (FK to Quizzes)
+    - user_id (FK to Users)
+    - start_time
+    - end_time
+    - score
+
+25. ClassPosts
+    - post_id (PK)
+    - class_id (FK to Classes)
+    - user_id (FK to Users)
+    - title
+    - content
+    - created_at
+    - updated_at
+    - is_pinned
+    - is_announcement
+
+26. ClassPostAttachments
+    - attachment_id (PK)
+    - post_id (FK to ClassPosts)
+    - file_name
+    - file_url
+    - file_type
+
+27. ClassPostComments
+    - comment_id (PK)
+    - post_id (FK to ClassPosts)
+    - user_id (FK to Users)
+    - content
+    - created_at
+    - updated_at
+
+28. SharedClassPosts
+    - shared_post_id (PK)
+    - original_post_id (FK to ClassPosts)
+    - shared_to_class_id (FK to Classes)
+    - shared_by_user_id (FK to Users)
+    - shared_at
+
+29. Announcements
+    - announcement_id (PK)
+    - class_id (FK to Classes)
+    - user_id (FK to Users)
+    - title
+    - content
+    - published_at
+    - is_visible
+    - visibility_start
+    - visibility_end
+
+30. DiscussionForums
+    - forum_id (PK)
+    - class_id (FK to Classes)
+    - title
+    - description
+
+31. DiscussionThreads
+    - thread_id (PK)
+    - forum_id (FK to DiscussionForums)
+    - user_id (FK to Users)
+    - title
+    - content
+    - created_at
+
+32. DiscussionReplies
+    - reply_id (PK)
+    - thread_id (FK to DiscussionThreads)
+    - user_id (FK to Users)
+    - content
+    - created_at
+
+33. Messages
+    - message_id (PK)
+    - sender_id (FK to Users)
+    - recipient_id (FK to Users)
+    - subject
+    - content
+    - sent_at
+    - read_at
+    - is_deleted_by_sender
+    - is_deleted_by_recipient
+
+34. Grades
+    - grade_id (PK)
+    - class_id (FK to Classes)
+    - user_id (FK to Users)
+    - activity_id (FK to Activities)
+    - score
+    - max_score
+    - weight
+    - graded_by (FK to Users)
+    - graded_at
+
+35. AttendanceRecords
+    - record_id (PK)
+    - class_id (FK to Classes)
+    - user_id (FK to Users)
+    - date
+    - status (present, absent, late)
+    - recorded_by (FK to Users)
+
+36. Calendar
+    - event_id (PK)
+    - class_id (FK to Classes)
+    - title
+    - description
+    - start_time
+    - end_time
+    - location
+    - created_by (FK to Users)
+
+37. Notifications
+    - notification_id (PK)
+    - user_id (FK to Users)
+    - type
+    - content
+    - is_read
+    - created_at
+
+38. UserActivityLogs
+    - log_id (PK)
+    - user_id (FK to Users)
+    - activity_type
+    - details
+    - ip_address
+    - timestamp
+
+39. Reports
+    - report_id (PK)
+    - class_id (FK to Classes)
+    - creator_id (FK to Users)
+    - title
+    - description
+    - type (progress, grade, attendance, etc.)
+    - data_json
+    - created_at
+    - updated_at
+
+40. ReportSharing
+    - sharing_id (PK)
+    - report_id (FK to Reports)
+    - user_id (FK to Users)
+    - permission (view, edit)
+
+41. LearningObjectives
+    - objective_id (PK)
+    - course_id (FK to Courses)
+    - description
+    - created_by (FK to Users)
+
+42. Rubrics
+    - rubric_id (PK)
+    - course_id (FK to Courses)
+    - title
+    - description
+    - created_by (FK to Users)
+
+43. RubricCriteria
+    - criteria_id (PK)
+    - rubric_id (FK to Rubrics)
+    - description
+    - max_score
+
+44. Badges
+    - badge_id (PK)
+    - name
+    - description
+    - image_url
+    - criteria
+
+45. UserBadges
+    - user_badge_id (PK)
+    - user_id (FK to Users)
+    - badge_id (FK to Badges)
+    - awarded_at
+
+46. Feedback
+    - feedback_id (PK)
+    - class_id (FK to Classes)
+    - user_id (FK to Users)
+    - content
+    - rating
+    - created_at
+
+47. IntegrationSettings
+    - setting_id (PK)
+    - integration_name
+    - api_key
+    - settings_json
+
+48. VideoConferences
+    - conference_id (PK)
+    - class_id (FK to Classes)
+    - title
+    - start_time
+    - duration
+    - platform (zoom, google_meet, etc.)
+    - meeting_url
+    - created_by (FK to Users)
+
+49. Analytics
+    - analytics_id (PK)
+    - class_id (FK to Classes)
+    - metric_name
+    - metric_value
+    - date
+
+50. SystemSettings
+    - setting_id (PK)
+    - key (unique)
+    - value
+    - description
+    - updated_at
+
+51. ThemeSettings
+    - theme_id (PK)
+    - name
+    - primary_color
+    - secondary_color
+    - text_color
+    - background_color
+    - link_color
+    - header_background_color
+    - footer_background_color
+    - is_active
+    - created_at
+    - updated_at
+
+52. CustomCSS
+    - css_id (PK)
+    - theme_id (FK to ThemeSettings)
+    - selector
+    - properties
+    - created_at
+    - updated_at
+
+53. Logos
+    - logo_id (PK)
+    - type (main, favicon, footer)
+    - file_path
+    - active
+
+54. FooterSettings
+    - footer_id (PK)
+    - content
+    - show_social_links
+    - created_at
+    - updated_at
+
+55. SocialLinks
+    - link_id (PK)
+    - platform (e.g., Facebook, Twitter, LinkedIn)
+    - url
+    - icon
+    - display_order
+
+
+-- Drop tables if they exist
+DROP TABLE IF EXISTS user_permissions_tb, role_permissions_tb, user_roles_tb, users_tb, roles_tb, permissions_tb, institutions_tb, departments_tb, academic_terms_tb, courses_tb, classes_tb, class_enrollments_tb, class_archives_tb, user_class_access_tb, modules_tb, content_items_tb, activities_tb, activity_materials_tb, activity_submissions_tb, activity_groups_tb, activity_group_members_tb, quizzes_tb, quiz_questions_tb, quiz_answers_tb, quiz_attempts_tb, class_posts_tb, class_post_attachments_tb, class_post_comments_tb, shared_class_posts_tb, announcements_tb, discussion_forums_tb, discussion_threads_tb, discussion_replies_tb, messages_tb, grades_tb, attendance_records_tb, calendar_tb, notifications_tb, user_activity_logs_tb, reports_tb, report_sharing_tb, learning_objectives_tb, rubrics_tb, rubric_criteria_tb, badges_tb, user_badges_tb, feedback_tb, integration_settings_tb, video_conferences_tb, analytics_tb, system_settings_tb, theme_settings_tb, custom_css_tb, logos_tb, footer_settings_tb, social_links_tb;
+
+-- ENUMs
+CREATE TYPE user_status AS ENUM ('active', 'inactive', 'suspended');
+CREATE TYPE class_status AS ENUM ('active', 'completed', 'archived');
+CREATE TYPE enrollment_status AS ENUM ('active', 'completed', 'dropped');
+CREATE TYPE access_type AS ENUM ('active', 'read-only');
+CREATE TYPE content_item_type AS ENUM ('lesson', 'activity', 'resource');
+CREATE TYPE activity_type AS ENUM ('assignment', 'quiz', 'discussion', 'material');
+CREATE TYPE material_type AS ENUM ('document', 'video', 'link');
+CREATE TYPE question_type AS ENUM ('multiple_choice', 'true_false', 'short_answer');
+CREATE TYPE post_status AS ENUM ('pinned', 'announcement');
+CREATE TYPE attendance_status AS ENUM ('present', 'absent', 'late');
+CREATE TYPE report_type AS ENUM ('progress', 'grade', 'attendance');
+CREATE TYPE permission_type AS ENUM ('view', 'edit');
+CREATE TYPE conference_platform AS ENUM ('zoom', 'google_meet');
+CREATE TYPE social_platform AS ENUM ('Facebook', 'Twitter', 'LinkedIn');
+CREATE TYPE logo_type AS ENUM ('main', 'favicon', 'footer');
+
+-- Users table
+CREATE TABLE users_tb (
+    user_id SERIAL PRIMARY KEY,
+    username TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    middle_name TEXT,
+    prefix TEXT,
+    display_name TEXT,
+    profile_picture_url TEXT,
+    bio TEXT,
+    date_of_birth DATE,
+    gender TEXT,
+    language_preference TEXT,
+    timezone TEXT,
+    status user_status DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    last_login_at TIMESTAMP
+);
+
+-- Roles table
+CREATE TABLE roles_tb (
+    role_id SERIAL PRIMARY KEY,
+    role_name TEXT NOT NULL,
+    description TEXT,
+    CONSTRAINT unique_role_name UNIQUE (role_name)
+);
+
+-- Insert default roles
+INSERT INTO roles_tb (role_name, description) VALUES
+('super_admin', 'Developer with full system access'),
+('school_admin', 'School-wide administrative access'),
+('department_admin', 'Department-level administrative access'),
+('teacher', 'Instructor role'),
+('student', 'Student role');
+
+-- Permissions table
+CREATE TABLE permissions_tb (
+    permission_id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    category TEXT NOT NULL,
+    CONSTRAINT unique_permission_name UNIQUE (name)
+);
+
+-- Insert a more comprehensive set of permissions
+INSERT INTO permissions_tb (name, description, category) VALUES
+-- Super Admin permissions
+('manage_system_settings', 'Manage global system settings', 'system'),
+('manage_api', 'Manage API settings and access', 'system'),
+('view_all_data', 'View all system data', 'system'),
+
+-- School Admin permissions
+('manage_school_settings', 'Manage school-specific settings', 'school'),
+('manage_departments', 'Create and manage departments', 'school'),
+('manage_users', 'Manage all users within the school', 'school'),
+('view_school_reports', 'View school-wide reports', 'school'),
+
+-- Department Admin permissions
+('manage_department_settings', 'Manage department-specific settings', 'department'),
+('manage_courses', 'Create and manage courses within the department', 'department'),
+('manage_department_users', 'Manage users within the department', 'department'),
+('view_department_reports', 'View department-specific reports', 'department'),
+
+-- Teacher permissions
+('create_class', 'Create a new class', 'class'),
+('manage_class', 'Manage class details and enrollment', 'class'),
+('create_content', 'Create and upload course content', 'content'),
+('grade_assignments', 'Grade student assignments and quizzes', 'assessment'),
+('communicate_with_students', 'Send messages and announcements to students', 'communication'),
+
+-- Student permissions
+('view_enrolled_classes', 'View classes the student is enrolled in', 'class'),
+('submit_assignments', 'Submit assignments and take quizzes', 'assessment'),
+('view_grades', 'View personal grades', 'assessment'),
+('participate_in_discussions', 'Participate in class discussions', 'communication');
+
+-- UserRoles table
+CREATE TABLE user_roles_tb (
+    user_role_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users_tb(user_id),
+    role_id INT REFERENCES roles_tb(role_id),
+    assigned_at TIMESTAMP DEFAULT NOW()
+);
+
+-- RolePermissions table
+CREATE TABLE role_permissions_tb (
+    role_permission_id SERIAL PRIMARY KEY,
+    role_id INT REFERENCES roles_tb(role_id),
+    permission_id INT REFERENCES permissions_tb(permission_id),
+    granted BOOLEAN DEFAULT TRUE,
+    CONSTRAINT unique_role_permission UNIQUE (role_id, permission_id)
+);
+
+-- Assign default permissions to roles
+INSERT INTO role_permissions_tb (role_id, permission_id, granted)
+SELECT r.role_id, p.permission_id, TRUE
+FROM roles_tb r
+CROSS JOIN permissions_tb p
+WHERE 
+    (r.role_name = 'super_admin') OR
+    (r.role_name = 'school_admin' AND p.category IN ('school', 'department', 'class', 'content', 'assessment', 'communication')) OR
+    (r.role_name = 'department_admin' AND p.category IN ('department', 'class', 'content', 'assessment', 'communication')) OR
+    (r.role_name = 'teacher' AND p.category IN ('class', 'content', 'assessment', 'communication')) OR
+    (r.role_name = 'student' AND p.name IN ('view_enrolled_classes', 'submit_assignments', 'view_grades', 'participate_in_discussions'));
+
+-- UserPermissions table
+CREATE TABLE user_permissions_tb (
+    user_permission_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users_tb(user_id),
+    permission_id INT REFERENCES permissions_tb(permission_id),
+    granted_by INT REFERENCES users_tb(user_id),
+    granted_at TIMESTAMP DEFAULT NOW(),
+    CONSTRAINT unique_user_permission UNIQUE (user_id, permission_id)
+);
+
+-- Institutions table
+CREATE TABLE institutions_tb (
+    institution_id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    address TEXT,
+    website TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    active_theme_id INT REFERENCES theme_settings_tb(theme_id)
+);
+
+-- Departments table
+CREATE TABLE departments_tb (
+    department_id SERIAL PRIMARY KEY,
+    institution_id INT REFERENCES institutions_tb(institution_id),
+    name TEXT NOT NULL,
+    description TEXT
+);
+
+-- AcademicTerms table
+CREATE TABLE academic_terms_tb (
+    term_id SERIAL PRIMARY KEY,
+    institution_id INT REFERENCES institutions_tb(institution_id),
+    name TEXT NOT NULL,
+    start_date DATE,
+    end_date DATE,
+    is_current BOOLEAN
+);
+
+-- Courses table
+CREATE TABLE courses_tb (
+    course_id SERIAL PRIMARY KEY,
+    creator_id INT REFERENCES users_tb(user_id),
+    department_id INT REFERENCES departments_tb(department_id),
+    title TEXT NOT NULL,
+    description TEXT,
+    code TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    status TEXT
+);
+
+-- Classes table
+CREATE TABLE classes_tb (
+    class_id SERIAL PRIMARY KEY,
+    course_id INT REFERENCES courses_tb(course_id),
+    term_id INT REFERENCES academic_terms_tb(term_id),
+    teacher_id INT REFERENCES users_tb(user_id),
+    name TEXT NOT NULL,
+    section TEXT,
+    start_date DATE,
+    end_date DATE,
+    status class_status DEFAULT 'active',
+    syllabus_content TEXT,
+    syllabus_last_updated TIMESTAMP
+);
+
+-- ClassEnrollments table
+CREATE TABLE class_enrollments_tb (
+    enrollment_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    user_id INT REFERENCES users_tb(user_id),
+    status enrollment_status DEFAULT 'active',
+    enrolled_at TIMESTAMP DEFAULT NOW(),
+    completed_at TIMESTAMP
+);
+
+-- ClassArchives table
+CREATE TABLE class_archives_tb (
+    archive_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    archived_at TIMESTAMP DEFAULT NOW(),
+    archive_expiry_date DATE
+);
+
+-- UserClassAccess table
+CREATE TABLE user_class_access_tb (
+    access_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users_tb(user_id),
+    class_id INT REFERENCES classes_tb(class_id),
+    access_type access_type,
+    access_expiry_date DATE
+);
+
+-- Modules table
+CREATE TABLE modules_tb (
+    module_id SERIAL PRIMARY KEY,
+    course_id INT REFERENCES courses_tb(course_id),
+    title TEXT NOT NULL,
+    description TEXT,
+    order INT,
+    is_visible BOOLEAN DEFAULT TRUE,
+    availability_start DATE,
+    availability_end DATE
+);
+
+-- ContentItems table
+CREATE TABLE content_items_tb (
+    item_id SERIAL PRIMARY KEY,
+    module_id INT REFERENCES modules_tb(module_id),
+    title TEXT NOT NULL,
+    type content_item_type,
+    content TEXT,
+    order INT,
+    is_visible BOOLEAN DEFAULT TRUE,
+    availability_start DATE,
+    availability_end DATE
+);
+
+-- Activities table
+CREATE TABLE activities_tb (
+    activity_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    content_item_id INT REFERENCES content_items_tb(item_id),
+    title TEXT NOT NULL,
+    description TEXT,
+    type activity_type,
+    due_date DATE,
+    points INT,
+    is_group_activity BOOLEAN,
+    created_by INT REFERENCES users_tb(user_id),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    is_visible BOOLEAN DEFAULT TRUE,
+    availability_start DATE,
+    availability_end DATE
+);
+
+-- ActivityMaterials table
+CREATE TABLE activity_materials_tb (
+    material_id SERIAL PRIMARY KEY,
+    activity_id INT REFERENCES activities_tb(activity_id),
+    title TEXT NOT NULL,
+    description TEXT,
+    file_url TEXT,
+    content_type material_type
+);
+
+-- ActivitySubmissions table
+CREATE TABLE activity_submissions_tb (
+    submission_id SERIAL PRIMARY KEY,
+    activity_id INT REFERENCES activities_tb(activity_id),
+    user_id INT REFERENCES users_tb(user_id),
+    group_id INT REFERENCES activity_groups_tb(group_id),
+    content TEXT,
+    file_url TEXT,
+    submitted_at TIMESTAMP DEFAULT NOW(),
+    is_late BOOLEAN,
+    grade INT,
+    feedback TEXT,
+    graded_by INT REFERENCES users_tb(user_id),
+    graded_at TIMESTAMP
+);
+
+-- ActivityGroups table
+CREATE TABLE activity_groups_tb (
+    group_id SERIAL PRIMARY KEY,
+    activity_id INT REFERENCES activities_tb(activity_id),
+    name TEXT
+);
+
+-- ActivityGroupMembers table
+CREATE TABLE activity_group_members_tb (
+    member_id SERIAL PRIMARY KEY,
+    group_id INT REFERENCES activity_groups_tb(group_id),
+    user_id INT REFERENCES users_tb(user_id),
+    role TEXT
+);
+
+-- Quizzes table
+CREATE TABLE quizzes_tb (
+    quiz_id SERIAL PRIMARY KEY,
+    activity_id INT REFERENCES activities_tb(activity_id),
+    time_limit INT,
+    attempts_allowed INT,
+    shuffle_questions BOOLEAN,
+    is_visible BOOLEAN DEFAULT TRUE,
+    availability_start DATE,
+    availability_end DATE
+);
+
+-- QuizQuestions table
+CREATE TABLE quiz_questions_tb (
+    question_id SERIAL PRIMARY KEY,
+    quiz_id INT REFERENCES quizzes_tb(quiz_id),
+    question_text TEXT NOT NULL,
+    question_type question_type,
+    points INT
+);
+
+-- QuizAnswers table
+CREATE TABLE quiz_answers_tb (
+    answer_id SERIAL PRIMARY KEY,
+    question_id INT REFERENCES quiz_questions_tb(question_id),
+    answer_text TEXT,
+    is_correct BOOLEAN
+);
+
+-- QuizAttempts table
+CREATE TABLE quiz_attempts_tb (
+    attempt_id SERIAL PRIMARY KEY,
+    quiz_id INT REFERENCES quizzes_tb(quiz_id),
+    user_id INT REFERENCES users_tb(user_id),
+    start_time TIMESTAMP,
+    end_time TIMESTAMP,
+    score INT
+);
+
+-- ClassPosts table
+CREATE TABLE class_posts_tb (
+    post_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    user_id INT REFERENCES users_tb(user_id),
+    title TEXT NOT NULL,
+    content TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    is_pinned BOOLEAN DEFAULT FALSE,
+    is_announcement BOOLEAN DEFAULT FALSE
+);
+
+-- ClassPostAttachments table
+CREATE TABLE class_post_attachments_tb (
+    attachment_id SERIAL PRIMARY KEY,
+    post_id INT REFERENCES class_posts_tb(post_id),
+    file_name TEXT,
+    file_url TEXT,
+    file_type TEXT
+);
+
+-- ClassPostComments table
+CREATE TABLE class_post_comments_tb (
+    comment_id SERIAL PRIMARY KEY,
+    post_id INT REFERENCES class_posts_tb(post_id),
+    user_id INT REFERENCES users_tb(user_id),
+    content TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- SharedClassPosts table
+CREATE TABLE shared_class_posts_tb (
+    shared_post_id SERIAL PRIMARY KEY,
+    original_post_id INT REFERENCES class_posts_tb(post_id),
+    shared_to_class_id INT REFERENCES classes_tb(class_id),
+    shared_by_user_id INT REFERENCES users_tb(user_id),
+    shared_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Announcements table
+CREATE TABLE announcements_tb (
+    announcement_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    user_id INT REFERENCES users_tb(user_id),
+    title TEXT NOT NULL,
+    content TEXT,
+    published_at TIMESTAMP DEFAULT NOW(),
+    is_visible BOOLEAN DEFAULT TRUE,
+    visibility_start DATE,
+    visibility_end DATE
+);
+
+-- DiscussionForums table
+CREATE TABLE discussion_forums_tb (
+    forum_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    title TEXT NOT NULL,
+    description TEXT
+);
+
+-- DiscussionThreads table
+CREATE TABLE discussion_threads_tb (
+    thread_id SERIAL PRIMARY KEY,
+    forum_id INT REFERENCES discussion_forums_tb(forum_id),
+    user_id INT REFERENCES users_tb(user_id),
+    title TEXT NOT NULL,
+    content TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- DiscussionReplies table
+CREATE TABLE discussion_replies_tb (
+    reply_id SERIAL PRIMARY KEY,
+    thread_id INT REFERENCES discussion_threads_tb(thread_id),
+    user_id INT REFERENCES users_tb(user_id),
+    content TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Messages table
+CREATE TABLE messages_tb (
+    message_id SERIAL PRIMARY KEY,
+    sender_id INT REFERENCES users_tb(user_id),
+    recipient_id INT REFERENCES users_tb(user_id),
+    subject TEXT,
+    content TEXT,
+    sent_at TIMESTAMP DEFAULT NOW(),
+    read_at TIMESTAMP,
+    is_deleted_by_sender BOOLEAN DEFAULT FALSE,
+    is_deleted_by_recipient BOOLEAN DEFAULT FALSE
+);
+
+-- Grades table
+CREATE TABLE grades_tb (
+    grade_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    user_id INT REFERENCES users_tb(user_id),
+    activity_id INT REFERENCES activities_tb(activity_id),
+    score INT,
+    max_score INT,
+    weight INT,
+    graded_by INT REFERENCES users_tb(user_id),
+    graded_at TIMESTAMP
+);
+
+-- AttendanceRecords table
+CREATE TABLE attendance_records_tb (
+    record_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    user_id INT REFERENCES users_tb(user_id),
+    date DATE,
+    status attendance_status,
+    recorded_by INT REFERENCES users_tb(user_id)
+);
+
+-- Calendar table
+CREATE TABLE calendar_tb (
+    event_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    title TEXT NOT NULL,
+    description TEXT,
+    start_time TIMESTAMP,
+    end_time TIMESTAMP,
+    location TEXT,
+    created_by INT REFERENCES users_tb(user_id)
+);
+
+-- Notifications table
+CREATE TABLE notifications_tb (
+    notification_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users_tb(user_id),
+    type TEXT,
+    content TEXT,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- UserActivityLogs table
+CREATE TABLE user_activity_logs_tb (
+    log_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users_tb(user_id),
+    activity_type TEXT,
+    details TEXT,
+    ip_address TEXT,
+    timestamp TIMESTAMP DEFAULT NOW()
+);
+
+-- Reports table
+CREATE TABLE reports_tb (
+    report_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    creator_id INT REFERENCES users_tb(user_id),
+    title TEXT NOT NULL,
+    description TEXT,
+    type report_type,
+    data_json JSON,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- ReportSharing table
+CREATE TABLE report_sharing_tb (
+    sharing_id SERIAL PRIMARY KEY,
+    report_id INT REFERENCES reports_tb(report_id),
+    user_id INT REFERENCES users_tb(user_id),
+    permission permission_type
+);
+
+-- LearningObjectives table
+CREATE TABLE learning_objectives_tb (
+    objective_id SERIAL PRIMARY KEY,
+    course_id INT REFERENCES courses_tb(course_id),
+    description TEXT,
+    created_by INT REFERENCES users_tb(user_id)
+);
+
+-- Rubrics table
+CREATE TABLE rubrics_tb (
+    rubric_id SERIAL PRIMARY KEY,
+    course_id INT REFERENCES courses_tb(course_id),
+    title TEXT NOT NULL,
+    description TEXT,
+    created_by INT REFERENCES users_tb(user_id)
+);
+
+-- RubricCriteria table
+CREATE TABLE rubric_criteria_tb (
+    criteria_id SERIAL PRIMARY KEY,
+    rubric_id INT REFERENCES rubrics_tb(rubric_id),
+    description TEXT,
+    max_score INT
+);
+
+-- Badges table
+CREATE TABLE badges_tb (
+    badge_id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    image_url TEXT,
+    criteria TEXT
+);
+
+-- UserBadges table
+CREATE TABLE user_badges_tb (
+    user_badge_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users_tb(user_id),
+    badge_id INT REFERENCES badges_tb(badge_id),
+    awarded_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Feedback table
+CREATE TABLE feedback_tb (
+    feedback_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    user_id INT REFERENCES users_tb(user_id),
+    content TEXT,
+    rating INT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- IntegrationSettings table
+CREATE TABLE integration_settings_tb (
+    setting_id SERIAL PRIMARY KEY,
+    integration_name TEXT NOT NULL,
+    api_key TEXT,
+    settings_json JSON
+);
+
+-- VideoConferences table
+CREATE TABLE video_conferences_tb (
+    conference_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    title TEXT NOT NULL,
+    start_time TIMESTAMP,
+    duration INT,
+    platform conference_platform,
+    meeting_url TEXT,
+    created_by INT REFERENCES users_tb(user_id)
+);
+
+-- Analytics table
+CREATE TABLE analytics_tb (
+    analytics_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes_tb(class_id),
+    metric_name TEXT NOT NULL,
+    metric_value TEXT,
+    date DATE
+);
+
+-- SystemSettings table
+CREATE TABLE system_settings_tb (
+    setting_id SERIAL PRIMARY KEY,
+    key TEXT UNIQUE NOT NULL,
+    value TEXT,
+    description TEXT,
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- ThemeSettings table
+CREATE TABLE theme_settings_tb (
+    theme_id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    primary_color TEXT,
+    secondary_color TEXT,
+    text_color TEXT,
+    background_color TEXT,
+    link_color TEXT,
+    header_background_color TEXT,
+    footer_background_color TEXT,
+    is_active BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- CustomCSS table
+CREATE TABLE custom_css_tb (
+    css_id SERIAL PRIMARY KEY,
+    theme_id INT REFERENCES theme_settings_tb(theme_id),
+    selector TEXT NOT NULL,
+    properties TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Logos table
+CREATE TABLE logos_tb (
+    logo_id SERIAL PRIMARY KEY,
+    type logo_type,
+    file_path TEXT NOT NULL,
+    active BOOLEAN DEFAULT TRUE
+);
+
+-- FooterSettings table
+CREATE TABLE footer_settings_tb (
+    footer_id SERIAL PRIMARY KEY,
+    content TEXT,
+    show_social_links BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- SocialLinks table
+CREATE TABLE social_links_tb (
+    link_id SERIAL PRIMARY KEY,
+    platform social_platform,
+    url TEXT,
+    icon TEXT,
+    display_order INT
+);
