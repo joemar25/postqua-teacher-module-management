@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../assets/js/init-alpine.js"></script>
-    <script src="../assets/js/controls/student/assignmentView.js"></script>
+    <script src="../assets/js/controls/student/quizView.js"></script>
 </head>
 
 <body>
@@ -278,11 +278,14 @@
             </header>
             <main class="h-full overflow-y-auto">
                 <div class="container p-6 mx-auto grid">
-                    <h2 class="my-6 text-3xl font-semibold text-gray-700 dark:text-gray-200" id="assignmentsTitle">
-                        Assignments
+                    <h2 class="my-6 text-3xl font-semibold text-gray-700 dark:text-gray-200" id="quizTitle">
+                        Quiz Title
                     </h2>
-                    <div id="assignmentsContainer" class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">
-                        <p class="text-sm text-gray-600 dark:text-gray-400">No assignments available.</p>
+                    <div id="quizDescription" class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">
+                        Quiz Description
+                    </div>
+                    <div id="quizQuestions" class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">
+                        <!-- Questions will be appended here -->
                     </div>
                 </div>
             </main>

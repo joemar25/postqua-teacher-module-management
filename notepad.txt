@@ -551,12 +551,12 @@ INSERT INTO permissions_tb (name, description, category) VALUES
 ('create_class', 'Create a new class', 'class'),
 ('manage_class', 'Manage class details and enrollment', 'class'),
 ('create_content', 'Create and upload course content', 'content'),
-('grade_assignments', 'Grade student assignments and quizzes', 'assessment'),
+('grade_Announcements', 'Grade student Announcements and quizzes', 'assessment'),
 ('communicate_with_students', 'Send messages and announcements to students', 'communication'),
 
 -- Student permissions
 ('view_enrolled_classes', 'View classes the student is enrolled in', 'class'),
-('submit_assignments', 'Submit assignments and take quizzes', 'assessment'),
+('submit_Announcements', 'Submit Announcements and take quizzes', 'assessment'),
 ('view_grades', 'View personal grades', 'assessment'),
 ('participate_in_discussions', 'Participate in class discussions', 'communication');
 
@@ -587,7 +587,7 @@ WHERE
     (r.role_name = 'school_admin' AND p.category IN ('school', 'department', 'class', 'content', 'assessment', 'communication')) OR
     (r.role_name = 'department_admin' AND p.category IN ('department', 'class', 'content', 'assessment', 'communication')) OR
     (r.role_name = 'teacher' AND p.category IN ('class', 'content', 'assessment', 'communication')) OR
-    (r.role_name = 'student' AND p.name IN ('view_enrolled_classes', 'submit_assignments', 'view_grades', 'participate_in_discussions'));
+    (r.role_name = 'student' AND p.name IN ('view_enrolled_classes', 'submit_Announcements', 'view_grades', 'participate_in_discussions'));
 
 -- UserPermissions table
 CREATE TABLE user_permissions_tb (

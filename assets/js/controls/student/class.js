@@ -24,7 +24,7 @@ async function fetchClasses() {
         *,
         classes (
           *,
-          courses ( id, title )
+          courses ( id, title, teacher_id )
         )
       `
       )
@@ -32,22 +32,40 @@ async function fetchClasses() {
 
     if (error) throw error;
 
-    displayClasses(classes);
+    // Fetch teachers' information
+    const teacherIds = classes.map((cls) => cls.classes.courses.teacher_id);
+    const { data: teachers, error: teacherError } = await supabase_connection
+      .from("teachers")
+      .select("id, first_name, last_name")
+      .in("id", teacherIds);
+
+    if (teacherError) throw teacherError;
+
+    const teachersMap = Object.fromEntries(
+      teachers.map((teacher) => [
+        teacher.id,
+        `${teacher.first_name} ${teacher.last_name}`,
+      ])
+    );
+
+    displayClasses(classes, teachersMap);
   } catch (error) {
     console.error("Error fetching classes:", error);
     alert("Failed to fetch classes. Please try again.");
   }
 }
 
-function displayClasses(classStudents) {
+function displayClasses(classStudents, teachersMap) {
   const classCardsContainer = document.getElementById("classCards");
   classCardsContainer.innerHTML = "";
 
   classStudents.forEach((classStudent) => {
     const class_ = classStudent.classes;
+    const teacherName = teachersMap[class_.courses.teacher_id];
+
     const card = document.createElement("div");
     card.className =
-      "flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800";
+      "flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800 cursor-pointer";
     card.innerHTML = `
       <div class="p-3 mr-4 text-orange-500 bg-orange-100 rounded-full dark:text-orange-100 dark:bg-orange-500">
         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -63,8 +81,16 @@ function displayClasses(classStudents) {
         <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
           ${class_.class_name}
         </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Teacher: ${teacherName}
+        </p>
       </div>
     `;
+
+    card.addEventListener("click", () => {
+      window.location.href = `student-class-view.html?classId=${class_.id}`;
+    });
+
     classCardsContainer.appendChild(card);
   });
 }
