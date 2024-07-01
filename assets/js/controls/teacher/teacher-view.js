@@ -106,22 +106,22 @@ async function loadStream(classId) {
 function createPostForm() {
   const formContainer = document.createElement("div");
   formContainer.className =
-    "bg-white dark:bg-gray-800 shadow sm:rounded-lg mb-6";
+    "bg-white dark:bg-gray-800 shadow sm:rounded-lg mb-6 p-4 border border-gray-300 dark:border-gray-700";
   formContainer.innerHTML = `
     <div class="px-4 py-5 sm:p-6">
       <h3 class="text-lg py-4 leading-6 font-medium text-gray-900 dark:text-gray-200">
         Create a post
       </h3>
-      <form id="postForm" class="mt-5">
+      <form id="postForm" class="mt-5 space-y-4">
         <textarea id="postContent" name="content" rows="3"
           class="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
           placeholder="Share with your class..."></textarea>
         <select id="postChapter"
-          class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+          class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
           <option value="">Select a chapter (optional)</option>
         </select>
         <select id="existingPosts"
-          class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+          class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
           <option value="">Reuse an existing post</option>
         </select>
         <div class="mt-3 flex justify-end">
@@ -139,6 +139,8 @@ function createPostForm() {
 function createCurriculumOverview() {
   const curriculumOverview = document.createElement("div");
   curriculumOverview.id = "curriculumOverview";
+  curriculumOverview.className =
+    "bg-white dark:bg-gray-800 p-4 shadow sm:rounded-lg mb-6 border border-gray-300 dark:border-gray-700";
   return curriculumOverview;
 }
 
@@ -494,9 +496,10 @@ function displayPosts(posts) {
   const postsList = document.getElementById("postsList");
   if (postsList) {
     postsList.innerHTML =
-      "<h3 class='text-lg font-semibold mb-2 mt-8'>General Posts</h3>";
+      "<h3 class='text-lg font-semibold mb-2 mt-8 text-gray-900 dark:text-gray-200'>General Posts</h3>";
     if (generalPosts.length === 0) {
-      postsList.innerHTML += "<p>No general posts available.</p>";
+      postsList.innerHTML +=
+        "<p class='text-gray-600 dark:text-gray-400'>No general posts available.</p>";
     } else {
       generalPosts.forEach((post) => {
         const postElement = createPostElement(post);
@@ -518,44 +521,45 @@ function displayPosts(posts) {
 
 function createPostElement(post) {
   const postElement = document.createElement("div");
-  postElement.className = "bg-white dark:bg-gray-800 rounded-lg shadow p-6";
+  postElement.className =
+    "bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-300 dark:border-gray-700 mb-4";
   postElement.innerHTML = `
-      <div class="flex justify-between items-center mb-4">
-        <span class="text-sm text-gray-500 dark:text-gray-400">${new Date(
-          post.created_at
-        ).toLocaleString()}</span>
-        <div>
-          <button onclick="editPost(${
-            post.id
-          })" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm mr-2">
-            Edit
-          </button>
-          <button onclick="deletePost(${
-            post.id
-          })" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm">
-            Delete
-          </button>
-        </div>
-      </div>
-      <p class="text-gray-800 dark:text-gray-200" id="post-content-${
-        post.id
-      }">${post.content}</p>
-      <div id="edit-form-${post.id}" class="hidden mt-4">
-        <textarea id="edit-content-${
+    <div class="flex justify-between items-center mb-4">
+      <span class="text-sm text-gray-500 dark:text-gray-400">${new Date(
+        post.created_at
+      ).toLocaleString()}</span>
+      <div>
+        <button onclick="editPost(${
           post.id
-        }" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">${
+        })" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm mr-2">
+          Edit
+        </button>
+        <button onclick="deletePost(${
+          post.id
+        })" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm">
+          Delete
+        </button>
+      </div>
+    </div>
+    <p class="text-gray-800 dark:text-gray-200" id="post-content-${post.id}">${
+    post.content
+  }</p>
+    <div id="edit-form-${post.id}" class="hidden mt-4">
+      <textarea id="edit-content-${
+        post.id
+      }" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">${
     post.content
   }</textarea>
-        <div class="mt-2 flex justify-end">
-          <button onclick="updatePost(${
-            post.id
-          })" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-2">Save</button>
-          <button onclick="cancelEdit(${
-            post.id
-          })" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">Cancel</button>
-        </div>
+      <div class="mt-2 flex justify-end">
+        <button onclick="updatePost(${
+          post.id
+        })" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-2">Save</button>
+        <button onclick="cancelEdit(${
+          post.id
+        })" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">Cancel</button>
       </div>
-    `;
+    </div>
+  `;
   return postElement;
 }
 
@@ -813,6 +817,9 @@ async function loadChapters(classId) {
     addChapterButton.textContent = "Add Chapter";
     addChapterButton.onclick = () => addChapter(classData.course_id);
     chaptersSection.appendChild(addChapterButton);
+
+    // Populate course curriculum dropdown in the post and discussion forms
+    populateChapterSelects(chaptersData);
   } catch (error) {
     console.error("Error loading chapters and quizzes:", error);
     chaptersSection.innerHTML +=
@@ -963,10 +970,11 @@ function displayDiscussions(discussions) {
   if (!discussionsList) return;
 
   discussionsList.innerHTML =
-    "<h3 class='text-lg font-semibold mb-2 mt-8'>Discussions</h3>";
+    "<h3 class='text-lg font-semibold mb-2 mt-8 text-gray-900 dark:text-gray-200'>Discussions</h3>";
 
   if (discussions.length === 0) {
-    discussionsList.innerHTML += "<p>No discussions available.</p>";
+    discussionsList.innerHTML +=
+      "<p class='text-gray-600 dark:text-gray-400'>No discussions available.</p>";
     return;
   }
 
@@ -981,7 +989,7 @@ function displayDiscussions(discussions) {
 
   if (groupedDiscussions.general) {
     discussionsList.innerHTML +=
-      "<h4 class='text-md font-semibold mb-2'>General Discussions</h4>";
+      "<h4 class='text-md font-semibold mb-2 text-gray-900 dark:text-gray-200'>General Discussions</h4>";
     groupedDiscussions.general.forEach((discussion) => {
       discussionsList.appendChild(createDiscussionElement(discussion));
     });
@@ -991,7 +999,7 @@ function displayDiscussions(discussions) {
     if (key !== "general") {
       const chapterId = key.split("-")[1];
       const chapterTitle = groupedDiscussions[key][0].chapters.title;
-      discussionsList.innerHTML += `<h4 class='text-md font-semibold mb-2 mt-4'>Chapter: ${chapterTitle}</h4>`;
+      discussionsList.innerHTML += `<h4 class='text-md font-semibold mb-2 mt-4 text-gray-900 dark:text-gray-200'>Chapter: ${chapterTitle}</h4>`;
       groupedDiscussions[key].forEach((discussion) => {
         discussionsList.appendChild(createDiscussionElement(discussion));
       });
@@ -1002,13 +1010,23 @@ function displayDiscussions(discussions) {
 function createDiscussionElement(discussion) {
   const discussionElement = document.createElement("div");
   discussionElement.className =
-    "bg-white dark:bg-gray-800 rounded-lg shadow p-6";
+    "bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-300 dark:border-gray-700 mb-4";
   discussionElement.innerHTML = `
     <div class="flex justify-between items-center mb-4">
       <span class="text-sm text-gray-500 dark:text-gray-400">${new Date(
         discussion.created_at
       ).toLocaleString()}</span>
       <div>
+        <button onclick="editDiscussionTitle(${
+          discussion.id
+        })" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm mr-2">
+          Edit Title
+        </button>
+        <button onclick="editDiscussion(${
+          discussion.id
+        })" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm mr-2">
+          Edit Content
+        </button>
         <button onclick="deleteDiscussion(${
           discussion.id
         })" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm">
@@ -1016,7 +1034,9 @@ function createDiscussionElement(discussion) {
         </button>
       </div>
     </div>
-    <h4 class="text-lg font-semibold mb-2">${discussion.title}</h4>
+    <h4 class="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-200" id="discussion-title-${
+      discussion.id
+    }">${discussion.title}</h4>
     <p class="text-gray-800 dark:text-gray-200" id="discussion-content-${
       discussion.id
     }">${discussion.description}</p>
@@ -1036,6 +1056,56 @@ function createDiscussionElement(discussion) {
     </form>
   `;
   return discussionElement;
+}
+
+async function editDiscussionTitle(discussionId) {
+  const discussionTitleElement = document.getElementById(
+    `discussion-title-${discussionId}`
+  );
+  const newTitle = prompt(
+    "Enter new discussion title:",
+    discussionTitleElement.textContent
+  );
+  if (newTitle && newTitle.trim()) {
+    try {
+      const { error } = await supabase_connection
+        .from("discussions")
+        .update({ title: newTitle.trim(), updated_at: new Date() })
+        .eq("id", discussionId);
+
+      if (error) throw error;
+
+      discussionTitleElement.textContent = newTitle.trim();
+    } catch (error) {
+      console.error("Error updating discussion title:", error);
+      alert("Failed to update discussion title. Please try again.");
+    }
+  }
+}
+
+async function editDiscussion(discussionId) {
+  const discussionContentElement = document.getElementById(
+    `discussion-content-${discussionId}`
+  );
+  const newContent = prompt(
+    "Enter new discussion content:",
+    discussionContentElement.textContent
+  );
+  if (newContent && newContent.trim()) {
+    try {
+      const { error } = await supabase_connection
+        .from("discussions")
+        .update({ description: newContent.trim(), updated_at: new Date() })
+        .eq("id", discussionId);
+
+      if (error) throw error;
+
+      discussionContentElement.textContent = newContent.trim();
+    } catch (error) {
+      console.error("Error updating discussion content:", error);
+      alert("Failed to update discussion content. Please try again.");
+    }
+  }
 }
 
 async function createComment(event, discussionId) {
@@ -1147,4 +1217,21 @@ async function deleteComment(commentId) {
   } catch (error) {
     console.error("Error deleting comment:", error);
   }
+}
+
+function populateChapterSelects(chapters) {
+  const selectElements = ["postChapter", "discussionChapter"];
+  selectElements.forEach((selectId) => {
+    const select = document.getElementById(selectId);
+    if (select) {
+      select.innerHTML =
+        "<option value=''>Select a chapter (optional)</option>";
+      chapters.forEach((chapter) => {
+        const option = document.createElement("option");
+        option.value = chapter.id;
+        option.textContent = chapter.title;
+        select.appendChild(option);
+      });
+    }
+  });
 }
