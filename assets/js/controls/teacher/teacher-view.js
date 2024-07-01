@@ -35,7 +35,6 @@ function setupEventListeners() {
     });
   });
 
-  // Use event delegation for the post form
   document.addEventListener("submit", (event) => {
     if (event.target.id === "postForm") {
       event.preventDefault();
@@ -92,23 +91,10 @@ async function loadStream(classId) {
     return;
   }
 
-  // Clear the stream section
   streamSection.innerHTML = "";
-
-  // Create post form
-  const postForm = createPostForm();
-  streamSection.appendChild(postForm);
-
-  // Create curriculum overview
-  const curriculumOverview = document.createElement("div");
-  curriculumOverview.id = "curriculumOverview";
-  streamSection.appendChild(curriculumOverview);
-
-  // Create posts list
-  const postsList = document.createElement("div");
-  postsList.id = "postsList";
-  postsList.className = "space-y-6";
-  streamSection.appendChild(postsList);
+  streamSection.appendChild(createPostForm());
+  streamSection.appendChild(createCurriculumOverview());
+  streamSection.appendChild(createPostsList());
 
   await Promise.all([
     loadCurriculumOverview(classId),
@@ -117,68 +103,50 @@ async function loadStream(classId) {
   ]);
 }
 
-async function loadExistingPosts() {
-  try {
-    const { data: posts, error } = await supabase_connection
-      .from("tbl_feeds")
-      .select("id, content, class_id, chapter_id, classes(class_name)")
-      .neq("class_id", currentClassId) // Exclude posts from the current class
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-
-    const existingPostsSelect = document.getElementById("existingPosts");
-    existingPostsSelect.innerHTML =
-      '<option value="">Reuse a post from another class</option>';
-
-    posts.forEach((post) => {
-      const option = document.createElement("option");
-      option.value = post.id;
-      const postPreview =
-        post.content.length > 50
-          ? `${post.content.substring(0, 50)}...`
-          : post.content;
-      option.textContent = `${post.classes.class_name}${
-        post.chapter_id ? ` (Chapter ${post.chapter_id})` : ""
-      }: ${postPreview}`;
-      existingPostsSelect.appendChild(option);
-    });
-  } catch (error) {
-    console.error("Error loading existing posts:", error);
-  }
-}
-
 function createPostForm() {
   const formContainer = document.createElement("div");
   formContainer.className =
     "bg-white dark:bg-gray-800 shadow sm:rounded-lg mb-6";
   formContainer.innerHTML = `
-      <div class="px-4 py-5 sm:p-6">
-        <h3 class="text-lg py-4 leading-6 font-medium text-gray-900 dark:text-gray-200">
-          Create a post
-        </h3>
-        <form id="postForm" class="mt-5">
-          <textarea id="postContent" name="content" rows="3"
-            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
-            placeholder="Share with your class..."></textarea>
-          <select id="postChapter"
-            class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-            <option value="">Select a chapter (optional)</option>
-          </select>
-          <select id="existingPosts"
-            class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-            <option value="">Reuse an existing post</option>
-          </select>
-          <div class="mt-3 flex justify-end">
-            <button type="submit"
-              class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              Post
-            </button>
-          </div>
-        </form>
-      </div>
-    `;
+    <div class="px-4 py-5 sm:p-6">
+      <h3 class="text-lg py-4 leading-6 font-medium text-gray-900 dark:text-gray-200">
+        Create a post
+      </h3>
+      <form id="postForm" class="mt-5">
+        <textarea id="postContent" name="content" rows="3"
+          class="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+          placeholder="Share with your class..."></textarea>
+        <select id="postChapter"
+          class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+          <option value="">Select a chapter (optional)</option>
+        </select>
+        <select id="existingPosts"
+          class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+          <option value="">Reuse an existing post</option>
+        </select>
+        <div class="mt-3 flex justify-end">
+          <button type="submit"
+            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Post
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
   return formContainer;
+}
+
+function createCurriculumOverview() {
+  const curriculumOverview = document.createElement("div");
+  curriculumOverview.id = "curriculumOverview";
+  return curriculumOverview;
+}
+
+function createPostsList() {
+  const postsList = document.createElement("div");
+  postsList.id = "postsList";
+  postsList.className = "space-y-6";
+  return postsList;
 }
 
 async function loadCurriculumOverview(classId) {
@@ -208,6 +176,10 @@ async function loadCurriculumOverview(classId) {
           id,
           title,
           order
+        ),
+        discussions (
+          id,
+          title
         )
       `
       )
@@ -216,71 +188,287 @@ async function loadCurriculumOverview(classId) {
 
     if (chaptersError) throw chaptersError;
 
-    console.log("Chapters fetched:", chapters); // Debugging line
+    overviewContainer.innerHTML = `
+      <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">Course Curriculum</h2>
+      <div id="editCurriculumBtn" class="mb-4">
+        <button onclick="toggleEditMode()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+          Edit Curriculum
+        </button>
+      </div>
+    `;
 
-    overviewContainer.innerHTML =
-      '<h2 class="text-xl font-bold mb-4">Course Curriculum</h2>';
-
-    if (chapters.length === 0) {
-      overviewContainer.innerHTML +=
-        "<p>No chapters available for this course.</p>";
-      return;
-    }
-
-    const chapterList = document.createElement("ul");
-    chapterList.className = "space-y-4";
+    const chapterList = document.createElement("div");
+    chapterList.className = "space-y-6";
 
     chapters.forEach((chapter) => {
-      const chapterItem = document.createElement("li");
-      chapterItem.className = "bg-white p-4 rounded shadow";
+      const chapterItem = document.createElement("div");
+      chapterItem.className =
+        "bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6";
       chapterItem.innerHTML = `
-        <h3 class="text-lg font-semibold">${chapter.title}</h3>
-        <ul class="mt-2 space-y-1">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-200" id="chapter-title-${
+            chapter.id
+          }">${chapter.title}</h3>
+          <div class="edit-buttons hidden">
+            <button onclick="editChapter(${
+              chapter.id
+            })" class="text-blue-500 hover:text-blue-600 mr-2">Edit</button>
+            <button onclick="deleteChapter(${
+              chapter.id
+            })" class="text-red-500 hover:text-red-600">Delete</button>
+          </div>
+        </div>
+        <ul class="space-y-2 mb-4" id="lesson-list-${chapter.id}">
           ${chapter.lessons
             .map(
               (lesson) => `
-            <li class="text-sm text-gray-600">${lesson.title}</li>
+            <li class="flex justify-between items-center">
+              <span class="text-gray-700 dark:text-gray-300">${lesson.title}</span>
+              <div class="edit-buttons hidden">
+                <button onclick="editLesson(${lesson.id})" class="text-blue-500 hover:text-blue-600 mr-2">Edit</button>
+                <button onclick="deleteLesson(${lesson.id})" class="text-red-500 hover:text-red-600">Delete</button>
+              </div>
+            </li>
           `
             )
             .join("")}
         </ul>
-        <div id="chapter-${chapter.id}-posts" class="mt-2 space-y-2"></div>
-        <div id="chapter-${
-          chapter.id
-        }-discussions" class="mt-2 space-y-2"></div>
+        <div class="edit-buttons hidden">
+          <button onclick="addLesson(${
+            chapter.id
+          })" class="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded text-sm">Add Lesson</button>
+        </div>
+        <div class="mt-4">
+          <h4 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Discussions</h4>
+          <ul class="space-y-2" id="discussion-list-${chapter.id}">
+            ${chapter.discussions
+              .map(
+                (discussion) => `
+              <li class="text-gray-600 dark:text-gray-400">${discussion.title}</li>
+            `
+              )
+              .join("")}
+          </ul>
+        </div>
       `;
       chapterList.appendChild(chapterItem);
     });
 
     overviewContainer.appendChild(chapterList);
 
-    // Populate the chapter select for posts and discussions
-    populateChapterSelects(chapters);
-
-    // Load posts and discussions for each chapter
-    await loadPosts(classId);
-    await loadDiscussionPosts(classId);
+    const addChapterButton = document.createElement("button");
+    addChapterButton.className =
+      "bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mt-6 hidden edit-buttons";
+    addChapterButton.textContent = "Add Chapter";
+    addChapterButton.onclick = () => addChapter(classData.course_id);
+    overviewContainer.appendChild(addChapterButton);
   } catch (error) {
     console.error("Error loading curriculum overview:", error);
     overviewContainer.innerHTML =
-      "<p>Failed to load curriculum overview. Please try again.</p>";
+      "<p class='text-red-500'>Failed to load curriculum overview. Please try again.</p>";
   }
 }
 
-function populateChapterSelects(chapters) {
-  const selects = ["postChapter", "discussionChapter"];
-  selects.forEach((selectId) => {
-    const select = document.getElementById(selectId);
-    if (select) {
-      select.innerHTML = "<option value=''>Select a chapter</option>";
-      chapters.forEach((chapter) => {
-        const option = document.createElement("option");
-        option.value = chapter.id;
-        option.textContent = chapter.title;
-        select.appendChild(option);
-      });
+function toggleEditMode() {
+  const editButtons = document.querySelectorAll(".edit-buttons");
+  const editCurriculumBtn =
+    document.getElementById("editCurriculumBtn").firstElementChild;
+
+  editButtons.forEach((button) => button.classList.toggle("hidden"));
+
+  if (editCurriculumBtn.textContent.includes("Edit")) {
+    editCurriculumBtn.textContent = "Save Changes";
+    editCurriculumBtn.classList.remove("bg-blue-500", "hover:bg-blue-600");
+    editCurriculumBtn.classList.add("bg-green-500", "hover:bg-green-600");
+  } else {
+    editCurriculumBtn.textContent = "Edit Curriculum";
+    editCurriculumBtn.classList.remove("bg-green-500", "hover:bg-green-600");
+    editCurriculumBtn.classList.add("bg-blue-500", "hover:bg-blue-600");
+    saveCurriculumChanges();
+  }
+}
+
+async function saveCurriculumChanges() {
+  console.log("Saving curriculum changes...");
+  await loadChapters(currentClassId);
+}
+
+async function editChapter(chapterId) {
+  const chapterTitle = document.getElementById(`chapter-title-${chapterId}`);
+  const newTitle = prompt("Enter new chapter title:", chapterTitle.textContent);
+  if (newTitle) {
+    try {
+      const { error } = await supabase_connection
+        .from("chapters")
+        .update({ title: newTitle, updated_at: new Date() })
+        .eq("id", chapterId);
+
+      if (error) throw error;
+
+      chapterTitle.textContent = newTitle;
+    } catch (error) {
+      console.error("Error updating chapter:", error);
+      alert("Failed to update chapter. Please try again.");
     }
-  });
+  }
+}
+
+async function deleteChapter(chapterId) {
+  if (
+    confirm(
+      "Are you sure you want to delete this chapter? This will also delete all associated lessons and discussions."
+    )
+  ) {
+    try {
+      const { error } = await supabase_connection
+        .from("chapters")
+        .delete()
+        .eq("id", chapterId);
+
+      if (error) throw error;
+
+      document
+        .getElementById(`chapter-title-${chapterId}`)
+        .closest(".bg-white")
+        .remove();
+    } catch (error) {
+      console.error("Error deleting chapter:", error);
+      alert("Failed to delete chapter. Please try again.");
+    }
+  }
+}
+
+async function addChapter(courseId) {
+  const newChapterTitle = prompt("Enter new chapter title:");
+  if (newChapterTitle) {
+    try {
+      const { data, error } = await supabase_connection
+        .from("chapters")
+        .insert({
+          title: newChapterTitle,
+          course_id: courseId,
+          order: 9999,
+        })
+        .select();
+
+      if (error) throw error;
+
+      await loadCurriculumOverview(currentClassId);
+    } catch (error) {
+      console.error("Error adding new chapter:", error);
+      alert("Failed to add new chapter. Please try again.");
+    }
+  }
+}
+
+async function editLesson(lessonId) {
+  const lessonTitleElement = document.getElementById(
+    `lesson-title-${lessonId}`
+  );
+  const newTitle = prompt(
+    "Enter new lesson title:",
+    lessonTitleElement.textContent
+  );
+  if (newTitle) {
+    try {
+      const { error } = await supabase_connection
+        .from("lessons")
+        .update({ title: newTitle, updated_at: new Date() })
+        .eq("id", lessonId);
+
+      if (error) throw error;
+
+      lessonTitleElement.textContent = newTitle;
+    } catch (error) {
+      console.error("Error updating lesson:", error);
+      alert("Failed to update lesson. Please try again.");
+    }
+  }
+}
+
+async function deleteLesson(lessonId) {
+  if (confirm("Are you sure you want to delete this lesson?")) {
+    try {
+      const { error } = await supabase_connection
+        .from("lessons")
+        .delete()
+        .eq("id", lessonId);
+
+      if (error) throw error;
+
+      document
+        .querySelector(`[data-lesson-id="${lessonId}"]`)
+        .closest("li")
+        .remove();
+    } catch (error) {
+      console.error("Error deleting lesson:", error);
+      alert("Failed to delete lesson. Please try again.");
+    }
+  }
+}
+
+async function addLesson(chapterId) {
+  const newLessonTitle = prompt("Enter new lesson title:");
+  if (newLessonTitle) {
+    try {
+      const { data, error } = await supabase_connection
+        .from("lessons")
+        .insert({
+          title: newLessonTitle,
+          chapter_id: chapterId,
+          order: 9999,
+        })
+        .select();
+
+      if (error) throw error;
+
+      const lessonList = document.getElementById(`lesson-list-${chapterId}`);
+      const newLessonElement = document.createElement("li");
+      newLessonElement.className = "flex justify-between items-center";
+      newLessonElement.innerHTML = `
+        <span class="text-gray-700 dark:text-gray-300" data-lesson-id="${data[0].id}">${newLessonTitle}</span>
+        <div class="edit-buttons">
+          <button onclick="editLesson(${data[0].id})" class="text-blue-500 hover:text-blue-600 mr-2">Edit</button>
+          <button onclick="deleteLesson(${data[0].id})" class="text-red-500 hover:text-red-600">Delete</button>
+        </div>
+      `;
+      lessonList.appendChild(newLessonElement);
+    } catch (error) {
+      console.error("Error adding new lesson:", error);
+      alert("Failed to add new lesson. Please try again.");
+    }
+  }
+}
+
+async function loadExistingPosts() {
+  try {
+    const { data: posts, error } = await supabase_connection
+      .from("tbl_feeds")
+      .select("id, content, class_id, chapter_id, classes(class_name)")
+      .neq("class_id", currentClassId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    const existingPostsSelect = document.getElementById("existingPosts");
+    existingPostsSelect.innerHTML =
+      '<option value="">Reuse a post from another class</option>';
+
+    posts.forEach((post) => {
+      const option = document.createElement("option");
+      option.value = post.id;
+      const postPreview =
+        post.content.length > 50
+          ? `${post.content.substring(0, 50)}...`
+          : post.content;
+      option.textContent = `${post.classes.class_name}${
+        post.chapter_id ? ` (Chapter ${post.chapter_id})` : ""
+      }: ${postPreview}`;
+      existingPostsSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error loading existing posts:", error);
+  }
 }
 
 async function loadPosts(classId) {
@@ -299,30 +487,10 @@ async function loadPosts(classId) {
   }
 }
 
-async function updatePost(postId) {
-  const newContent = document.getElementById(`edit-content-${postId}`).value;
-
-  if (!newContent.trim()) return;
-
-  try {
-    const { error } = await supabase_connection
-      .from("tbl_feeds")
-      .update({ content: newContent })
-      .eq("id", postId);
-
-    if (error) throw error;
-
-    await loadCurriculumOverview(currentClassId);
-  } catch (error) {
-    console.error("Error updating post:", error);
-  }
-}
-
 function displayPosts(posts) {
   const generalPosts = posts.filter((post) => !post.chapter_id);
   const chapterPosts = posts.filter((post) => post.chapter_id);
 
-  // Display general posts
   const postsList = document.getElementById("postsList");
   if (postsList) {
     postsList.innerHTML =
@@ -337,7 +505,6 @@ function displayPosts(posts) {
     }
   }
 
-  // Display chapter-specific posts
   chapterPosts.forEach((post) => {
     const chapterPostsContainer = document.getElementById(
       `chapter-${post.chapter_id}-posts`
@@ -408,6 +575,25 @@ function cancelEdit(postId) {
   editFormElement.classList.add("hidden");
 }
 
+async function updatePost(postId) {
+  const newContent = document.getElementById(`edit-content-${postId}`).value;
+
+  if (!newContent.trim()) return;
+
+  try {
+    const { error } = await supabase_connection
+      .from("tbl_feeds")
+      .update({ content: newContent })
+      .eq("id", postId);
+
+    if (error) throw error;
+
+    await loadCurriculumOverview(currentClassId);
+  } catch (error) {
+    console.error("Error updating post:", error);
+  }
+}
+
 async function createPost(event) {
   event.preventDefault();
   const content = document.getElementById("postContent").value;
@@ -476,8 +662,14 @@ async function deletePost(postId) {
 
 async function loadChapters(classId) {
   const chaptersSection = document.getElementById("classworkSection");
-  chaptersSection.innerHTML =
-    "<h3 class='text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4'>Classwork</h3>";
+  chaptersSection.innerHTML = `
+    <h3 class='text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4'>Classwork</h3>
+    <div id="editCurriculumBtn" class="mb-4">
+      <button onclick="toggleEditMode()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+        Edit Curriculum
+      </button>
+    </div>
+  `;
 
   try {
     const { data: classData, error: classError } = await supabase_connection
@@ -526,9 +718,6 @@ async function loadChapters(classId) {
       return;
     }
 
-    console.log("Chapters data:", chaptersData); // Debugging line
-
-    // Get the total number of students in the class
     const { count: totalStudents, error: studentsError } =
       await supabase_connection
         .from("class_students")
@@ -544,6 +733,7 @@ async function loadChapters(classId) {
       const chapterItem = document.createElement("div");
       chapterItem.className =
         "bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6";
+      chapterItem.id = `chapter-${chapter.id}`;
 
       let lessonsHTML = "";
       if (chapter.lessons.length === 0) {
@@ -553,8 +743,12 @@ async function loadChapters(classId) {
         lessonsHTML = '<ul class="mt-2 space-y-1">';
         chapter.lessons.forEach((lesson) => {
           lessonsHTML += `
-            <li class="text-sm text-gray-700 dark:text-gray-300">
-              ${lesson.title}
+            <li class="flex justify-between items-center" data-lesson-id="${lesson.id}">
+              <span id="lesson-title-${lesson.id}" class="text-gray-700 dark:text-gray-300">${lesson.title}</span>
+              <div class="edit-buttons hidden">
+                <button onclick="editLesson(${lesson.id})" class="text-blue-500 hover:text-blue-600 mr-2">Edit</button>
+                <button onclick="deleteLesson(${lesson.id})" class="text-red-500 hover:text-red-600">Delete</button>
+              </div>
             </li>
           `;
         });
@@ -593,16 +787,32 @@ async function loadChapters(classId) {
       }
 
       chapterItem.innerHTML = `
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">${chapter.title}</h3>
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-200" id="chapter-title-${chapter.id}">${chapter.title}</h3>
+          <div class="edit-buttons hidden">
+            <button onclick="editChapter(${chapter.id})" class="text-blue-500 hover:text-blue-600 mr-2">Edit</button>
+            <button onclick="deleteChapter(${chapter.id})" class="text-red-500 hover:text-red-600">Delete</button>
+          </div>
+        </div>
         <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mt-4">Lessons</h4>
         ${lessonsHTML}
+        <div class="edit-buttons hidden">
+          <button onclick="addLesson(${chapter.id})" class="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded text-sm">Add Lesson</button>
+        </div>
         <h4 class="text-md font-medium text-gray-700 dark:text-gray-300 mt-4">Quizzes</h4>
         ${quizzesHTML}
       `;
-      chaptersSection.appendChild(chapterItem);
+      chaptersList.appendChild(chapterItem);
     });
 
     chaptersSection.appendChild(chaptersList);
+
+    const addChapterButton = document.createElement("button");
+    addChapterButton.className =
+      "bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mt-6 hidden edit-buttons";
+    addChapterButton.textContent = "Add Chapter";
+    addChapterButton.onclick = () => addChapter(classData.course_id);
+    chaptersSection.appendChild(addChapterButton);
   } catch (error) {
     console.error("Error loading chapters and quizzes:", error);
     chaptersSection.innerHTML +=
@@ -659,18 +869,9 @@ async function loadDiscussions(classId) {
     return;
   }
 
-  // Clear the discussions section
   discussionsSection.innerHTML = "";
-
-  // Create discussion form
-  const discussionForm = createDiscussionForm();
-  discussionsSection.appendChild(discussionForm);
-
-  // Create discussions list
-  const discussionsList = document.createElement("div");
-  discussionsList.id = "discussionsList";
-  discussionsList.className = "space-y-6";
-  discussionsSection.appendChild(discussionsList);
+  discussionsSection.appendChild(createDiscussionForm());
+  discussionsSection.appendChild(createDiscussionsList());
 
   await loadDiscussionPosts(classId);
 }
@@ -680,32 +881,35 @@ function createDiscussionForm() {
   formContainer.className =
     "bg-white dark:bg-gray-800 shadow sm:rounded-lg mb-6";
   formContainer.innerHTML = `
-      <div class="px-4 py-5 sm:p-6">
-        <h3 class="text-lg py-4 leading-6 font-medium text-gray-900 dark:text-gray-200">
-          Create a Discussion
-        </h3>
-        <form id="discussionForm" class="mt-5">
-          <textarea id="discussionContent" name="content" rows="3"
-            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
-            placeholder="Start a discussion..."></textarea>
-          <select id="discussionChapter"
-            class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-            <option value="">Select a chapter (optional)</option>
-          </select>
-          <div class="mt-3 flex justify-end">
-            <button type="submit"
-              class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              Post
-            </button>
-          </div>
-        </form>
-      </div>
-    `;
+    <div class="px-4 py-5 sm:p-6">
+      <h3 class="text-lg py-4 leading-6 font-medium text-gray-900 dark:text-gray-200">
+        Create a Discussion
+      </h3>
+      <form id="discussionForm" class="mt-5">
+        <textarea id="discussionContent" name="content" rows="3"
+          class="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+          placeholder="Start a discussion..."></textarea>
+        <select id="discussionChapter"
+          class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+          <option value="">Select a chapter (optional)</option>
+        </select>
+        <div class="mt-3 flex justify-end">
+          <button type="submit"
+            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Post
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
   return formContainer;
 }
 
-function getCurrentTeacherId() {
-  return 1;
+function createDiscussionsList() {
+  const discussionsList = document.createElement("div");
+  discussionsList.id = "discussionsList";
+  discussionsList.className = "space-y-6";
+  return discussionsList;
 }
 
 async function createDiscussion(event) {
@@ -719,7 +923,7 @@ async function createDiscussion(event) {
     const postData = {
       class_id: currentClassId,
       chapter_id: chapterId || null,
-      title: content.substring(0, 255), // Assuming the first 255 characters as title
+      title: content.substring(0, 255),
       description: content,
       created_by: getCurrentTeacherId(),
     };
@@ -775,7 +979,6 @@ function displayDiscussions(discussions) {
     return acc;
   }, {});
 
-  // Display general discussions
   if (groupedDiscussions.general) {
     discussionsList.innerHTML +=
       "<h4 class='text-md font-semibold mb-2'>General Discussions</h4>";
@@ -784,7 +987,6 @@ function displayDiscussions(discussions) {
     });
   }
 
-  // Display chapter-specific discussions
   Object.keys(groupedDiscussions).forEach((key) => {
     if (key !== "general") {
       const chapterId = key.split("-")[1];
@@ -916,7 +1118,7 @@ async function deleteDiscussion(discussionId) {
 
   try {
     const { error } = await supabase_connection
-      .from("discussions") // Changed from "tbl_discussions" to "discussions"
+      .from("discussions")
       .delete()
       .eq("id", discussionId);
 
