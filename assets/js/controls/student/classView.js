@@ -100,14 +100,22 @@ async function fetchCurriculum(courseId, classId) {
 
     if (feedsError) throw feedsError;
 
-    displayCurriculum(chapters, feeds);
+    const { data: discussions, error: discussionsError } =
+      await supabase_connection
+        .from("discussions")
+        .select("*")
+        .eq("class_id", classId);
+
+    if (discussionsError) throw discussionsError;
+
+    displayCurriculum(chapters, feeds, discussions);
   } catch (error) {
     console.error("Error fetching curriculum:", error);
     showNotification("Failed to fetch curriculum. Please try again.", true);
   }
 }
 
-function displayCurriculum(chapters, feeds) {
+function displayCurriculum(chapters, feeds, discussions) {
   const curriculumContainer = document.getElementById("curriculumContainer");
   const noCurriculumMessage = document.getElementById("noCurriculumMessage");
   curriculumContainer.innerHTML = "";
@@ -121,6 +129,10 @@ function displayCurriculum(chapters, feeds) {
       const chapterFeeds = feeds.filter(
         (feed) => feed.chapter_id === chapter.id
       );
+      const chapterDiscussions = discussions.filter(
+        (discussion) => discussion.chapter_id === chapter.id
+      );
+
       const chapterItem = document.createElement("div");
       chapterItem.className =
         "p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800 mb-4";
@@ -130,6 +142,7 @@ function displayCurriculum(chapters, feeds) {
         }</h3>
         <div class="ml-4 mt-2 space-y-2">
           ${generateFeeds(chapterFeeds)}
+          ${generateDiscussions(chapterDiscussions)}
           ${generateSectionContent(
             "Lessons",
             chapter.lessons,
@@ -213,6 +226,28 @@ function generateFeeds(feeds) {
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${new Date(
           feed.created_at
         ).toLocaleString()}</p>
+      </div>
+    `
+      )
+      .join("")}
+  `;
+}
+
+function generateDiscussions(discussions) {
+  if (discussions.length === 0) {
+    return `<p class='text-sm font-medium text-gray-800 dark:text-gray-300 p-2 mt-2 bg-purple-100 dark:bg-purple-900 rounded-lg'>No discussions available.</p>`;
+  }
+
+  return `
+    <h4 class="text-md font-semibold text-gray-700 dark:text-gray-200 mt-4">Discussions</h4>
+    ${discussions
+      .map(
+        (discussion) => `
+      <div class="p-2 mt-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+        <h5 class="text-sm font-medium text-gray-800 dark:text-gray-300">
+          <a href="discussion.html?discussionId=${discussion.id}&classId=${discussion.class_id}" class="hover:underline">${discussion.title}</a>
+        </h5>
+        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">${discussion.description}</p>
       </div>
     `
       )
