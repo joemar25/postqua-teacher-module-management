@@ -72,7 +72,7 @@ async function fetchCurriculum(courseId, classId) {
           id,
           title,
           content,
-          order
+          "order"
         ),
         activities (
           id,
@@ -103,12 +103,24 @@ async function fetchCurriculum(courseId, classId) {
     const { data: discussions, error: discussionsError } =
       await supabase_connection
         .from("discussions")
-        .select("*")
+        .select(
+          `
+        *,
+        discussion_comments(
+          id
+        )
+      `
+        )
         .eq("class_id", classId);
 
     if (discussionsError) throw discussionsError;
 
-    displayCurriculum(chapters, feeds, discussions);
+    const transformedDiscussions = discussions.map((discussion) => ({
+      ...discussion,
+      comment_count: discussion.discussion_comments.length,
+    }));
+
+    displayCurriculum(chapters, feeds, transformedDiscussions);
   } catch (error) {
     console.error("Error fetching curriculum:", error);
     showNotification("Failed to fetch curriculum. Please try again.", true);
@@ -135,14 +147,13 @@ function displayCurriculum(chapters, feeds, discussions) {
 
       const chapterItem = document.createElement("div");
       chapterItem.className =
-        "p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800 mb-4";
+        "p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 mb-6";
       chapterItem.innerHTML = `
-        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200">${
+        <h3 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">${
           chapter.title
         }</h3>
-        <div class="ml-4 mt-2 space-y-2">
+        <div class="ml-4 mt-4 space-y-4">
           ${generateFeeds(chapterFeeds)}
-          ${generateDiscussions(chapterDiscussions)}
           ${generateSectionContent(
             "Lessons",
             chapter.lessons,
@@ -164,6 +175,7 @@ function displayCurriculum(chapters, feeds, discussions) {
             "bg-green-100",
             "dark:bg-green-900"
           )}
+          ${generateDiscussions(chapterDiscussions)}
         </div>
       `;
       curriculumContainer.appendChild(chapterItem);
@@ -179,26 +191,26 @@ function generateSectionContent(
   darkBgColor
 ) {
   if (!items || items.length === 0) {
-    return `<p class='text-sm font-medium text-gray-800 dark:text-gray-300 p-2 mt-2 ${lightBgColor} ${darkBgColor} rounded-lg'>No ${sectionTitle.toLowerCase()} available.</p>`;
+    return `<p class='text-sm font-medium text-gray-800 dark:text-gray-300 p-4 mt-4 ${lightBgColor} ${darkBgColor} rounded-lg'>No ${sectionTitle.toLowerCase()} available.</p>`;
   }
 
   return `
-    <h4 class="text-md font-semibold text-gray-700 dark:text-gray-200 mt-4">${sectionTitle}</h4>
+    <h4 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mt-4">${sectionTitle}</h4>
     ${items
       .map(
         (item) => `
-      <div class="p-2 mt-2 ${lightBgColor} ${darkBgColor} rounded-lg">
-        <h5 class="text-sm font-medium text-gray-800 dark:text-gray-300">
+      <div class="p-4 mt-2 ${lightBgColor} ${darkBgColor} rounded-lg">
+        <h5 class="text-lg font-medium text-gray-800 dark:text-gray-300">
           <a href="${itemType}.html?${itemType}Id=${item.id}&classId=${
           item.chapter_id
         }" class="hover:underline">${item.title}</a>
         </h5>
-        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">${
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">${
           item.description || item.content
         }</p>
         ${
           item.due_date
-            ? `<p class="text-xs text-red-500 dark:text-red-400 mt-1">Due: ${new Date(
+            ? `<p class="text-sm text-red-500 dark:text-red-400 mt-2">Due: ${new Date(
                 item.due_date
               ).toLocaleString()}</p>`
             : ""
@@ -216,12 +228,12 @@ function generateFeeds(feeds) {
   }
 
   return `
-    <h4 class="text-md font-semibold text-gray-700 dark:text-gray-200 mt-4">Announcements</h4>
+    <h4 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mt-4">Announcements</h4>
     ${feeds
       .map(
         (feed) => `
-      <div class="p-2 mt-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-        <h5 class="text-sm font-medium text-gray-800 dark:text-gray-300">Announcement</h5>
+      <div class="p-4 mt-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+        <h5 class="text-lg font-medium text-gray-800 dark:text-gray-300">Announcement</h5>
         <p class="text-sm text-gray-700 dark:text-gray-400">${feed.content}</p>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${new Date(
           feed.created_at
@@ -235,22 +247,83 @@ function generateFeeds(feeds) {
 
 function generateDiscussions(discussions) {
   if (discussions.length === 0) {
-    return `<p class='text-sm font-medium text-gray-800 dark:text-gray-300 p-2 mt-2 bg-purple-100 dark:bg-purple-900 rounded-lg'>No discussions available.</p>`;
+    return "";
   }
 
   return `
-    <h4 class="text-md font-semibold text-gray-700 dark:text-gray-200 mt-4">Discussions</h4>
+    <h4 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mt-4">Discussions</h4>
     ${discussions
       .map(
         (discussion) => `
-      <div class="p-2 mt-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-        <h5 class="text-sm font-medium text-gray-800 dark:text-gray-300">
+      <div class="p-4 mt-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+        <h5 class="text-lg font-medium text-gray-800 dark:text-gray-300">
           <a href="discussion.html?discussionId=${discussion.id}&classId=${discussion.class_id}" class="hover:underline">${discussion.title}</a>
         </h5>
-        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">${discussion.description}</p>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">${discussion.description}</p>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">${discussion.comment_count} comments</p>
+        <form id="commentForm-${discussion.id}" class="mt-4 space-y-2" onsubmit="addComment(event, ${discussion.id})">
+          <textarea id="commentContent-${discussion.id}" name="content" rows="2"
+            class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+            placeholder="Add a comment..."></textarea>
+          <div class="flex justify-end">
+            <button type="submit"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              Comment
+            </button>
+          </div>
+        </form>
       </div>
     `
       )
       .join("")}
   `;
+}
+
+async function addComment(event, discussionId) {
+  event.preventDefault();
+  const commentContent = document.getElementById(
+    `commentContent-${discussionId}`
+  ).value;
+
+  if (!commentContent.trim()) {
+    alert("Comment content cannot be empty");
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase_connection
+      .from("discussion_comments")
+      .insert([
+        { discussion_id: discussionId, comment: commentContent, created_by: 3 }, // Using student ID 3
+      ]).select(`
+        *,
+        tbl_student(
+          tbl_student_id,
+          student_name
+        )
+      `);
+
+    if (error) throw error;
+
+    document.getElementById(`commentContent-${discussionId}`).value = "";
+    const commentsContainer = document.getElementById(
+      `comments-${discussionId}`
+    );
+
+    const newCommentHTML = generateComments([
+      {
+        ...data[0],
+        created_by: data[0].tbl_student.student_name,
+      },
+    ]);
+
+    commentsContainer.insertAdjacentHTML("afterbegin", newCommentHTML);
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    alert("Failed to add comment. Please try again.");
+  }
+}
+
+function showNotification(message, isError = false) {
+  console.log(message);
 }
