@@ -4,7 +4,10 @@ const SUPABASE_URL = "https://hvqvmxakmursjidtfmdj.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2cXZteGFrbXVyc2ppZHRmbWRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg2MDA4MjQsImV4cCI6MjAzNDE3NjgyNH0.dykJM61G-58LEnAyCUU6-irano2f4vraV8t1l8C5KZ8";
 
-const supabase_connection = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase_connection = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 
 async function fetchCourseData(teacherId) {
   const { data, error } = await supabase_connection
@@ -139,7 +142,7 @@ function editCourse(courseId) {
 
 async function deleteCourse(courseId) {
   if (confirm("Are you sure you want to delete this course?")) {
-    const { data, error } = await supabase
+    const { data, error } = await supabase_connection
       .from("courses")
       .delete()
       .eq("id", courseId);
@@ -165,4 +168,49 @@ async function updateCoursesPage() {
   }
 }
 
+// Function to show the new course modal
+function showNewCourseModal() {
+  document.getElementById("newCourseModal").classList.remove("hidden");
+}
+
+// Function to hide the new course modal
+function hideNewCourseModal() {
+  document.getElementById("newCourseModal").classList.add("hidden");
+}
+
+// Function to create a new course
+async function createNewCourse(event) {
+  event.preventDefault();
+
+  const title = document.getElementById("courseTitle").value;
+  const description = document.getElementById("courseDescription").value;
+  const category = document.getElementById("courseCategory").value;
+  const teacherId = 1; // Replace with actual teacher ID when authentication is implemented
+
+  const { data, error } = await supabase_connection
+    .from("courses")
+    .insert([{ title, description, category, teacher_id: teacherId }]);
+
+  if (error) {
+    console.error("Error creating course:", error);
+    alert("Failed to create the course. Please try again.");
+  } else {
+    alert("Course created successfully");
+    hideNewCourseModal();
+    updateCoursesPage();
+  }
+}
+
 document.addEventListener("DOMContentLoaded", updateCoursesPage);
+// Event listeners
+document.addEventListener("DOMContentLoaded", function () {
+  document
+    .getElementById("newCourseBtn")
+    .addEventListener("click", showNewCourseModal);
+  document
+    .getElementById("cancelNewCourse")
+    .addEventListener("click", hideNewCourseModal);
+  document
+    .getElementById("newCourseForm")
+    .addEventListener("submit", createNewCourse);
+});
